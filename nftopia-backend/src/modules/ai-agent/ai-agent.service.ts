@@ -15,15 +15,18 @@ import type {
 import { NftService } from '../nft/nft.service';
 import { ListingService } from '../listing/listing.service';
 import { CollectionService } from '../collection/collection.service';
+import { OrderService } from '../order/order.service';
 import { resolveToolSet } from './tools/tool-set.registry';
 import type { ToolSetName } from './tools/tool-set.types';
 import { AiUsageService } from './ai-usage.service';
 import { ChatSessionService } from './chat-session.service';
 
 const SYSTEM_PROMPT = `You are the NFTopia marketplace assistant. You help users find NFTs, \
-listings, and collections on the NFTopia Stellar marketplace using the tools available to you. \
-Only state facts returned by your tools — never invent prices, ownership, or availability. \
-If a search returns no results, say so plainly instead of guessing. Keep answers concise.`;
+listings, and collections on the NFTopia Stellar marketplace, and answer questions about the \
+status of their own past orders (purchases and sales), using the tools available to you. \
+Only state facts returned by your tools — never invent prices, ownership, availability, or \
+order status. If a search returns no results, say so plainly instead of guessing. Keep \
+answers concise.`;
 
 @Injectable()
 export class AiAgentService {
@@ -34,6 +37,7 @@ export class AiAgentService {
     private readonly nftService: NftService,
     private readonly listingService: ListingService,
     private readonly collectionService: CollectionService,
+    private readonly orderService: OrderService,
     private readonly aiUsageService: AiUsageService,
     private readonly chatSessionService: ChatSessionService,
   ) {}
@@ -55,6 +59,8 @@ export class AiAgentService {
       nftService: this.nftService,
       listingService: this.listingService,
       collectionService: this.collectionService,
+      orderService: this.orderService,
+      userId,
     });
 
     const messages: BetaMessageParam[] = [
@@ -138,6 +144,8 @@ export class AiAgentService {
             nftService: this.nftService,
             listingService: this.listingService,
             collectionService: this.collectionService,
+            orderService: this.orderService,
+            userId,
           });
 
           const messages: BetaMessageParam[] = [

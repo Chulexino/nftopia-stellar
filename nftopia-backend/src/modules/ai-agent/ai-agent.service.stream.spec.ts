@@ -5,6 +5,7 @@ import { AiAgentService } from './ai-agent.service';
 import type { NftService } from '../nft/nft.service';
 import type { ListingService } from '../listing/listing.service';
 import type { CollectionService } from '../collection/collection.service';
+import type { OrderService } from '../order/order.service';
 import type { AiUsageService } from './ai-usage.service';
 import type { ChatSessionService } from './chat-session.service';
 
@@ -118,6 +119,7 @@ describe('AiAgentService.chatStream', () => {
       {} as NftService,
       {} as ListingService,
       {} as CollectionService,
+      {} as OrderService,
       aiUsageService as unknown as AiUsageService,
       chatSessionService as unknown as ChatSessionService,
     );

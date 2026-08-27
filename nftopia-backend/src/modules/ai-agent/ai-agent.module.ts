@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { NftModule } from '../nft/nft.module';
 import { ListingModule } from '../listing/listing.module';
 import { CollectionModule } from '../collection/collection.module';
+import { OrderModule } from '../order/order.module';
 import { AiAgentService } from './ai-agent.service';
 import { AiAgentController } from './ai-agent.controller';
 import { AiUsageService } from './ai-usage.service';
@@ -22,6 +23,7 @@ import { aiChatRateLimiterProvider } from '../../common/guards/ai-chat-rate-limi
     NftModule,
     ListingModule,
     CollectionModule,
+    OrderModule,
   ],
   providers: [
     AiAgentService,

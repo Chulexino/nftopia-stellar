@@ -14,6 +14,8 @@ const fakeDeps = {
   nftService: {} as never,
   listingService: {} as never,
   collectionService: {} as never,
+  orderService: {} as never,
+  userId: 'user-1',
 };
 
 /** Minimal stand-in for a resolved tool — only `.name` is read by the guard. */
