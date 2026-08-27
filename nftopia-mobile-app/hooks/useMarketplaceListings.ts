@@ -1,6 +1,6 @@
 import { useQuery } from '@apollo/client';
 import { GET_MARKETPLACE_LISTINGS_QUERY } from '@/lib/api/graphql/queries';
-import { mapMarketplaceListings, MarketplaceListingRaw, MarketplaceSortOption } from '@/src/utils/marketplaceViewModels';
+import { mapMarketplaceListings, MarketplaceListingRaw, MarketplaceFilters, toListingsFilterArgs } from '@/src/utils/marketplaceViewModels';
 
 const PAGE_SIZE = 12;
 
@@ -18,23 +18,19 @@ export interface MarketplaceListingsVars {
     status?: string;
     search?: string;
     category?: string;
+    minPrice?: number;
+    maxPrice?: number;
     sortBy?: string;
   };
 }
 
 export interface UseMarketplaceListingsParams {
+  filters: MarketplaceFilters;
   search?: string;
-  category?: string;
-  sortBy?: MarketplaceSortOption;
 }
 
-export const useMarketplaceListings = ({ search, category, sortBy }: UseMarketplaceListingsParams) => {
-  const filter: NonNullable<MarketplaceListingsVars['filter']> = {
-    status: 'ACTIVE',
-    ...(search ? { search } : {}),
-    ...(category ? { category } : {}),
-    ...(sortBy ? { sortBy } : {}),
-  };
+export const useMarketplaceListings = ({ filters, search }: UseMarketplaceListingsParams) => {
+  const filter = toListingsFilterArgs(filters, search);
 
   const { data, loading, error, fetchMore, refetch } = useQuery<MarketplaceListingsData, MarketplaceListingsVars>(
     GET_MARKETPLACE_LISTINGS_QUERY,

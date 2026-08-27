@@ -6,8 +6,9 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MainStackParamList } from '@/navigation/MainNavigator';
 import { colors, spacing } from '@/constants/theme';
 import { useMarketplaceListings } from '@/hooks/useMarketplaceListings';
+import { useMarketplaceFiltersStore } from '@/stores/marketplaceFiltersStore';
 import type { MarketplaceListingCard as MarketplaceListingCardVM, MarketplaceSortOption } from '@/src/utils/marketplaceViewModels';
-import type { Category } from '@/constants/categories';
+import { getActiveMarketplaceFilterCount } from '@/src/utils/marketplaceViewModels';
 import { ErrorFallback } from '@/src/components/ErrorFallback';
 import { withErrorBoundary } from '@/src/hoc/withErrorBoundary';
 import { useAnalytics } from '@/src/hooks/useAnalytics';
@@ -20,7 +21,7 @@ import { errorLogger } from '@/src/errors/logger';
 import MarketplaceListingCard from '@/components/ui/MarketplaceListingCard';
 import MarketplaceSearchBar from '@/components/ui/MarketplaceSearchBar';
 import MarketplaceSortBar from '@/components/ui/MarketplaceSortBar';
-import CategorySelector from '@/components/ui/CategorySelector';
+import FilterSheet from '@/components/ui/FilterSheet';
 
 const GRID_COLUMNS = 2;
 
@@ -31,14 +32,24 @@ function MarketplaceContent() {
   const { track, trackScreenView, trackPerformance } = useAnalytics();
 
   const [search, setSearch] = useState('');
-  const [sortBy, setSortBy] = useState<MarketplaceSortOption>('newest');
+  const [filterSheetVisible, setFilterSheetVisible] = useState(false);
 
-  const activeCategoryId = route.params?.category;
+  const filters = useMarketplaceFiltersStore();
+  const { setCategory, setStatus, setPriceRange, setSortBy, clearAll } = filters;
+
+  // A category deep-linked from Home (e.g. tapping a discovery chip) takes
+  // over the persisted filter for this visit; a plain back-navigation into
+  // Marketplace (no param) leaves whatever the user last filtered by alone.
+  useEffect(() => {
+    if (route.params?.category) {
+      setCategory(route.params.category);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [route.params?.category]);
 
   const { listings, loading, error, loadMore, refetch } = useMarketplaceListings({
+    filters,
     search: search || undefined,
-    category: activeCategoryId,
-    sortBy,
   });
 
   const {
@@ -58,11 +69,7 @@ function MarketplaceContent() {
     analyticsEvent: 'marketplace_refresh',
   });
 
-  const handleSelectCategory = (category: Category) => {
-    const nextCategoryId = category.id === activeCategoryId ? undefined : category.id;
-    track(ANALYTICS_EVENTS.SEARCH_FILTER, { screen: 'marketplace', categoryId: nextCategoryId });
-    navigation.setParams({ category: nextCategoryId });
-  };
+  const activeFilterCount = getActiveMarketplaceFilterCount(filters);
 
   const handleSearchChange = (query: string) => {
     setSearch(query);
@@ -74,6 +81,31 @@ function MarketplaceContent() {
   const handleSortChange = (option: MarketplaceSortOption) => {
     setSortBy(option);
     track(ANALYTICS_EVENTS.SEARCH_FILTER, { screen: 'marketplace', sortBy: option });
+  };
+
+  const handleApplyFilters = (draft: {
+    category?: string;
+    status: typeof filters.status;
+    minPrice?: number;
+    maxPrice?: number;
+  }) => {
+    setCategory(draft.category);
+    setStatus(draft.status);
+    setPriceRange(draft.minPrice, draft.maxPrice);
+    track(ANALYTICS_EVENTS.SEARCH_FILTER, {
+      screen: 'marketplace',
+      categoryId: draft.category,
+      status: draft.status,
+      minPrice: draft.minPrice,
+      maxPrice: draft.maxPrice,
+    });
+    setFilterSheetVisible(false);
+  };
+
+  const handleClearAllFilters = () => {
+    clearAll();
+    track(ANALYTICS_EVENTS.SEARCH_FILTER, { screen: 'marketplace', cleared: true });
+    setFilterSheetVisible(false);
   };
 
   useEffect(() => {
@@ -145,14 +177,43 @@ function MarketplaceContent() {
       </View>
 
       <View style={styles.filters}>
-        <MarketplaceSearchBar onSearchChange={handleSearchChange} testID="marketplace-search" />
-        <CategorySelector
-          selectedCategoryId={activeCategoryId}
-          onSelectCategory={handleSelectCategory}
-          testID="marketplace-category-selector"
-        />
-        <MarketplaceSortBar selected={sortBy} onSelect={handleSortChange} testID="marketplace-sort" />
+        <View style={styles.filtersTopRow}>
+          <View style={styles.searchWrapper}>
+            <MarketplaceSearchBar onSearchChange={handleSearchChange} testID="marketplace-search" />
+          </View>
+          <TouchableOpacity
+            style={styles.filterTrigger}
+            onPress={() => {
+              track(ANALYTICS_EVENTS.SEARCH_FILTER, { screen: 'marketplace', action: 'open_sheet' });
+              setFilterSheetVisible(true);
+            }}
+            accessibilityRole="button"
+            accessibilityLabel={
+              activeFilterCount > 0
+                ? `${t('marketplace.filters.trigger')} (${activeFilterCount})`
+                : t('marketplace.filters.trigger')
+            }
+            testID="marketplace-filter-trigger"
+          >
+            <Text style={styles.filterTriggerText}>{t('marketplace.filters.trigger')}</Text>
+            {activeFilterCount > 0 && (
+              <View style={styles.filterBadge} testID="marketplace-filter-badge">
+                <Text style={styles.filterBadgeText}>{activeFilterCount}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        </View>
+        <MarketplaceSortBar selected={filters.sortBy} onSelect={handleSortChange} testID="marketplace-sort" />
       </View>
+
+      <FilterSheet
+        visible={filterSheetVisible}
+        filters={filters}
+        onApply={handleApplyFilters}
+        onClearAll={handleClearAllFilters}
+        onClose={() => setFilterSheetVisible(false)}
+        testID="marketplace-filter-sheet"
+      />
 
       {showFullScreenError ? (
         <ErrorFallback
@@ -243,6 +304,44 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
+  },
+  filtersTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  searchWrapper: {
+    flex: 1,
+  },
+  filterTrigger: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 44,
+    paddingHorizontal: spacing.md,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surfaceElevated,
+    gap: spacing.xs,
+  },
+  filterTriggerText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  filterBadge: {
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+  },
+  filterBadgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
   listContent: {
     padding: spacing.md,

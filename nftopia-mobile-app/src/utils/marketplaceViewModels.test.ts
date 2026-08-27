@@ -2,6 +2,10 @@ import {
   mapMarketplaceListings,
   MarketplaceListingRaw,
   MARKETPLACE_SORT_OPTIONS,
+  DEFAULT_MARKETPLACE_FILTERS,
+  MarketplaceFilters,
+  toListingsFilterArgs,
+  getActiveMarketplaceFilterCount,
 } from './marketplaceViewModels';
 
 describe('mapMarketplaceListings', () => {
@@ -78,5 +82,78 @@ describe('mapMarketplaceListings', () => {
 describe('MARKETPLACE_SORT_OPTIONS', () => {
   it('lists every sort option the backend accepts, newest first', () => {
     expect(MARKETPLACE_SORT_OPTIONS).toEqual(['newest', 'oldest', 'price_asc', 'price_desc']);
+  });
+});
+
+describe('toListingsFilterArgs', () => {
+  it('produces just the default status filter when nothing else is set', () => {
+    expect(toListingsFilterArgs(DEFAULT_MARKETPLACE_FILTERS)).toEqual({
+      status: 'ACTIVE',
+      sortBy: 'newest',
+    });
+  });
+
+  it('omits status entirely when the status filter is ALL', () => {
+    const filters: MarketplaceFilters = { ...DEFAULT_MARKETPLACE_FILTERS, status: 'ALL' };
+    expect(toListingsFilterArgs(filters)).toEqual({ sortBy: 'newest' });
+  });
+
+  it('includes category, price range and search when set', () => {
+    const filters: MarketplaceFilters = {
+      category: 'art',
+      status: 'SOLD',
+      minPrice: 5,
+      maxPrice: 50,
+      sortBy: 'price_asc',
+    };
+    expect(toListingsFilterArgs(filters, 'cosmic')).toEqual({
+      status: 'SOLD',
+      category: 'art',
+      minPrice: 5,
+      maxPrice: 50,
+      sortBy: 'price_asc',
+      search: 'cosmic',
+    });
+  });
+
+  it('supports an open-ended price range (min only)', () => {
+    const filters: MarketplaceFilters = { ...DEFAULT_MARKETPLACE_FILTERS, minPrice: 10 };
+    expect(toListingsFilterArgs(filters)).toEqual({ status: 'ACTIVE', sortBy: 'newest', minPrice: 10 });
+  });
+
+  it('omits search when blank', () => {
+    expect(toListingsFilterArgs(DEFAULT_MARKETPLACE_FILTERS, '')).not.toHaveProperty('search');
+  });
+});
+
+describe('getActiveMarketplaceFilterCount', () => {
+  it('returns 0 for the default filters', () => {
+    expect(getActiveMarketplaceFilterCount(DEFAULT_MARKETPLACE_FILTERS)).toBe(0);
+  });
+
+  it('counts a selected category', () => {
+    expect(getActiveMarketplaceFilterCount({ ...DEFAULT_MARKETPLACE_FILTERS, category: 'art' })).toBe(1);
+  });
+
+  it('counts a non-default status', () => {
+    expect(getActiveMarketplaceFilterCount({ ...DEFAULT_MARKETPLACE_FILTERS, status: 'SOLD' })).toBe(1);
+  });
+
+  it('counts a price range as a single dimension regardless of whether both bounds are set', () => {
+    expect(getActiveMarketplaceFilterCount({ ...DEFAULT_MARKETPLACE_FILTERS, minPrice: 10 })).toBe(1);
+    expect(
+      getActiveMarketplaceFilterCount({ ...DEFAULT_MARKETPLACE_FILTERS, minPrice: 10, maxPrice: 100 }),
+    ).toBe(1);
+  });
+
+  it('sums independent dimensions', () => {
+    expect(
+      getActiveMarketplaceFilterCount({
+        category: 'art',
+        status: 'SOLD',
+        minPrice: 10,
+        maxPrice: 100,
+      }),
+    ).toBe(3);
   });
 });

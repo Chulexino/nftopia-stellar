@@ -164,7 +164,21 @@
   "marketplace": {
     "title": "Marktplatz",
     "searchPlaceholder": "NFTs suchen...",
-    "filters": "Filter",
+    "filters": {
+      "trigger": "Filter",
+      "title": "Filter",
+      "category": "Kategorie",
+      "status": "Status",
+      "statusAll": "Alle",
+      "statusActive": "Aktiv",
+      "statusSold": "Verkauft",
+      "priceRange": "Preisspanne (XLM)",
+      "minPrice": "Min",
+      "maxPrice": "Max",
+      "apply": "Filter anwenden",
+      "clearAll": "Alles löschen",
+      "priceRangeInvalid": "Mindestpreis darf nicht höher als Höchstpreis sein"
+    },
     "sortBy": "Sortieren nach",
     "newest": "Neueste",
     "oldest": "Älteste",
