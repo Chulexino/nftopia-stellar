@@ -35,10 +35,6 @@ export async function getSignClient(): Promise<ISignClient> {
       const { SignClient } = await import("@walletconnect/sign-client");
       const projectId = getWalletConnectProjectId();
 
-      if (process.env.NODE_ENV !== "production") {
-        console.log(`[WalletConnect] Initializing with Project ID: ${projectId ? `${projectId.slice(0, 6)}…` : "none"}`);
-      }
-
       const client = await SignClient.init({
         projectId,
         metadata: {
