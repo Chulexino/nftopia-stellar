@@ -77,3 +77,24 @@ export const NFT_CARD_FIELDS_FRAGMENT = gql`
     image
   }
 `;
+
+// Marketplace grid: full listing card including price/currency and the
+// underlying NFT's creator, so cards can show price + creator without a
+// second round trip.
+export const MARKETPLACE_LISTING_FIELDS_FRAGMENT = gql`
+  fragment MarketplaceListingFields on Listing {
+    id
+    price
+    currency
+    createdAt
+    nft {
+      id
+      name
+      image
+      creator {
+        id
+        username
+      }
+    }
+  }
+`;

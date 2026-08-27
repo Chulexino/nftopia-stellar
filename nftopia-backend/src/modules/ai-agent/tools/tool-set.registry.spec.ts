@@ -8,6 +8,10 @@ import {
   buildMarketplaceTools,
   MARKETPLACE_TOOL_NAMES,
 } from './marketplace.tools';
+import {
+  buildModerationTools,
+  MODERATION_TOOL_NAMES,
+} from './moderation.tools';
 import type { RunnableToolLike, ToolSetName } from './tool-set.types';
 
 const fakeDeps = {
@@ -17,6 +21,10 @@ const fakeDeps = {
   orderService: {} as never,
   auctionService: {} as never,
   userId: 'user-1',
+};
+
+const fakeModerationDeps = {
+  contentFlagService: {} as never,
 };
 
 /** Minimal stand-in for a resolved tool — only `.name` is read by the guard. */
@@ -55,8 +63,48 @@ describe('tool-set.registry', () => {
     });
   });
 
+  describe('resolveToolSet("moderation")', () => {
+    it('returns exactly the tools declared in MODERATION_TOOL_NAMES', () => {
+      const tools = resolveToolSet('moderation', fakeModerationDeps);
+      const names = tools.map((tool) => tool.name).sort();
+
+      expect(names).toEqual([...MODERATION_TOOL_NAMES].sort());
+    });
+
+    it('does not throw', () => {
+      expect(() =>
+        resolveToolSet('moderation', fakeModerationDeps),
+      ).not.toThrow();
+    });
+  });
+
+  describe('MODERATION_TOOL_NAMES', () => {
+    it('has no duplicates', () => {
+      expect(new Set(MODERATION_TOOL_NAMES).size).toBe(
+        MODERATION_TOOL_NAMES.length,
+      );
+    });
+
+    it('matches exactly what buildModerationTools actually returns (no drift)', () => {
+      const actualNames = buildModerationTools(fakeModerationDeps)
+        .map((tool) => tool.name)
+        .sort();
+
+      expect(actualNames).toEqual([...MODERATION_TOOL_NAMES].sort());
+    });
+
+    it('does not appear in the marketplace-assistant tool set', () => {
+      const marketplaceNames = resolveToolSet(
+        'marketplace-assistant',
+        fakeDeps,
+      ).map((tool) => tool.name);
+
+      expect(marketplaceNames).not.toContain('flag_content');
+    });
+  });
+
   describe('resolveToolSet for an unregistered tool set', () => {
-    it.each<ToolSetName>(['creator-copilot', 'moderation', 'trading'])(
+    it.each<ToolSetName>(['creator-copilot', 'trading'])(
       'throws for "%s" since no builder is registered yet',
       (name) => {
         expect(() => resolveToolSet(name, fakeDeps)).toThrow(
