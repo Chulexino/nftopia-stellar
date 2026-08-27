@@ -11,8 +11,8 @@
   },
   "dependencies": {
     "@apollo/client": "^3.13.0",
-    "@formatjs/intl-localematcher": "^0.5.10",
-    "@react-native-async-storage/async-storage": "^3.1.1",
+    "@formatjs/intl-locaalematcher": "^0.5.10",
+    "@react-native/async-storage/async-storage": "^3.1.1",
     "@react-native-community/netinfo": "^9.5.0",
     "@react-navigation/native": "^7.3.14",
     "@react-navigation/native-stack": "^7.14.10",
@@ -45,10 +45,12 @@
     "react-native-gesture-handler": "~2.14.0",
     "react-native-metrics": "^1.0.0-alpha.2",
     "react-native-performance": "^6.0.0",
+    "react-native-qrcode-svg": "^6.2.0",
     "react-native-reanimated": "~3.6.2",
     "react-native-safe-area-context": "^5.1.0",
     "react-native-screens": "^4.6.0",
     "react-native-shared-element": "^0.8.9",
+    "react-native-svg": "^15.11.1",
     "stellar-hd-wallet": "^1.0.2",
     "stellar-sdk": "^12.3.0",
     "zustand": "^5.0.2"
