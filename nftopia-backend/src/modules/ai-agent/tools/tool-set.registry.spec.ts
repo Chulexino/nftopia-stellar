@@ -18,6 +18,9 @@ const fakeDeps = {
   nftService: {} as never,
   listingService: {} as never,
   collectionService: {} as never,
+  orderService: {} as never,
+  auctionService: {} as never,
+  userId: 'user-1',
 };
 
 const fakeModerationDeps = {

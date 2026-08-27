@@ -75,8 +75,11 @@ describe('AiAgentController', () => {
   });
 
   describe('chat', () => {
-    it('delegates to AiAgentService.chat with the authenticated user id and returns the reply', async () => {
-      aiAgentService.chat.mockResolvedValue('Here are the top listings.');
+    it('delegates to AiAgentService.chat with the authenticated user id and returns the reply + sessionId', async () => {
+      aiAgentService.chat.mockResolvedValue({
+        reply: 'Here are the top listings.',
+        sessionId: 'session-1',
+      });
 
       const result = await controller.chat(makeRequest('user-1'), {
         message: 'What NFTs are trending?',
@@ -88,11 +91,36 @@ describe('AiAgentController', () => {
         'What NFTs are trending?',
         undefined,
       );
-      expect(result).toEqual({ reply: 'Here are the top listings.' });
+      expect(result).toEqual({
+        reply: 'Here are the top listings.',
+        sessionId: 'session-1',
+      });
     });
 
-    it('forwards conversation history to AiAgentService.chat', async () => {
-      aiAgentService.chat.mockResolvedValue('Sure, here is more detail.');
+    it('forwards sessionId to AiAgentService.chat to continue an existing conversation', async () => {
+      aiAgentService.chat.mockResolvedValue({
+        reply: 'Sure, here is more detail.',
+        sessionId: 'session-42',
+      });
+
+      await controller.chat(makeRequest('user-1'), {
+        message: 'Tell me more',
+        sessionId: 'session-42',
+      });
+
+      expect(aiAgentService.chat).toHaveBeenCalledWith(
+        'user-1',
+        'marketplace-assistant',
+        'Tell me more',
+        'session-42',
+      );
+    });
+
+    it('ignores a client-supplied history array (deprecated — server loads history from the session)', async () => {
+      aiAgentService.chat.mockResolvedValue({
+        reply: 'Sure, here is more detail.',
+        sessionId: 'session-1',
+      });
       const history = [
         { role: 'user' as const, content: 'Hi' },
         { role: 'assistant' as const, content: 'Hello, how can I help?' },
@@ -107,7 +135,7 @@ describe('AiAgentController', () => {
         'user-1',
         'marketplace-assistant',
         'Tell me more',
-        history,
+        undefined,
       );
     });
 
@@ -159,7 +187,23 @@ describe('AiAgentController', () => {
       expect(result).toBe(observable);
     });
 
-    it('forwards conversation history to AiAgentService.chatStream', () => {
+    it('forwards sessionId to AiAgentService.chatStream to continue an existing conversation', () => {
+      aiAgentService.chatStream.mockReturnValue(of());
+
+      controller.chatStream(makeRequest('user-1'), {
+        message: 'Tell me more',
+        sessionId: 'session-42',
+      });
+
+      expect(aiAgentService.chatStream).toHaveBeenCalledWith(
+        'user-1',
+        'marketplace-assistant',
+        'Tell me more',
+        'session-42',
+      );
+    });
+
+    it('ignores a client-supplied history array (deprecated — server loads history from the session)', () => {
       aiAgentService.chatStream.mockReturnValue(of());
       const history = [{ role: 'user' as const, content: 'Hi' }];
 
@@ -172,7 +216,7 @@ describe('AiAgentController', () => {
         'user-1',
         'marketplace-assistant',
         'Tell me more',
-        history,
+        undefined,
       );
     });
 

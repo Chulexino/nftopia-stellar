@@ -1,5 +1,8 @@
 import { createStore } from '@/src/utils/store.factory';
 import { AuthStore, User } from '@/types/auth';
+import { Wallet } from '@/src/services/stellar/types';
+import { walletAuthService } from '@/src/services/auth/walletAuth.service';
+import { tokenStorage } from '@/src/services/auth/tokenStorage';
 
 export const VERSION = 2;
 
@@ -29,6 +32,7 @@ const migrations = [
 
 const initialState: AuthStore = {
   user: null,
+  wallet: null,
   loading: false,
   isAuthenticated: false,
   isCreator: false,
@@ -37,12 +41,14 @@ const initialState: AuthStore = {
   lastLogin: null,
 
   setUser: () => {},
+  setWallet: () => {},
   setLoading: () => {},
   setError: () => {},
   clearError: () => {},
   setIsCheckingAuth: () => {},
   setIsCreator: () => {},
   initializeAuth: async () => {},
+  loginWithWallet: async () => {},
   logout: async () => {},
   navigateToScreen: () => {},
   goBack: () => {},
@@ -64,6 +70,7 @@ export const useAuthStore = createStore<AuthStore>({
         lastLogin: user ? new Date().toISOString() : get().lastLogin,
       }),
 
+    setWallet: (wallet: Wallet | null) => set({ wallet }),
     setLoading: (loading: boolean) => set({ loading }),
     setError: (error: string | null) => set({ error }),
     clearError: () => set({ error: null }),
@@ -73,24 +80,84 @@ export const useAuthStore = createStore<AuthStore>({
     // Authentication Actions
     initializeAuth: async () => {
       set({ isCheckingAuth: true, loading: true });
-      // Auth initialization will be handled by the store's persistence
-      set({ isCheckingAuth: false, loading: false });
+      try {
+        const hasValidSession = await tokenStorage.hasValidSession();
+        if (hasValidSession) {
+          // `user`/`isAuthenticated` were already restored from persisted
+          // state by the store's persist middleware — this just confirms
+          // the access token backing that session is still valid.
+          set({ isAuthenticated: true });
+        } else {
+          const refreshToken = await tokenStorage.getRefreshToken();
+          if (refreshToken) {
+            try {
+              await walletAuthService.refreshAccessToken();
+              set({ isAuthenticated: true });
+            } catch {
+              set({ isAuthenticated: false, user: null, wallet: null });
+            }
+          } else {
+            set({ isAuthenticated: false });
+          }
+        }
+      } catch (error) {
+        set({
+          error: error instanceof Error ? error.message : 'Failed to restore session',
+          isAuthenticated: false,
+        });
+      } finally {
+        set({ isCheckingAuth: false, loading: false });
+      }
+    },
+
+    // Full challenge -> sign -> verify wallet login, replacing any prior session.
+    loginWithWallet: async (wallet: Wallet) => {
+      set({ loading: true, error: null });
+      try {
+        const authResponse = await walletAuthService.walletLogin(wallet);
+        set({
+          user: {
+            id: authResponse.user.id,
+            email: authResponse.user.email,
+            username: authResponse.user.username,
+            walletAddress: authResponse.user.walletAddress,
+          },
+          wallet,
+          isAuthenticated: true,
+          isCreator: false,
+          loading: false,
+          lastLogin: new Date().toISOString(),
+        });
+      } catch (error) {
+        set({
+          error: error instanceof Error ? error.message : 'Failed to sign in with wallet',
+          loading: false,
+        });
+        // Re-throw so the calling screen (which owns its own submit/loading
+        // UI) knows not to proceed past the login step.
+        throw error;
+      }
     },
 
     logout: async () => {
       try {
         set({ loading: true });
+        // Only the auth session is cleared here — the wallet's keys stay on
+        // device (via the separate wallet store) so the user can sign back
+        // in without re-entering their secret key or recovery phrase.
+        await tokenStorage.clearTokens();
+      } catch (error) {
+        set({
+          error: error instanceof Error ? error.message : 'Failed to logout',
+        });
+      } finally {
         set({
           user: null,
+          wallet: null,
           isAuthenticated: false,
           isCreator: false,
           loading: false,
           error: null,
-        });
-      } catch (error) {
-        set({
-          error: error instanceof Error ? error.message : 'Failed to logout',
-          loading: false,
         });
       }
     },
@@ -134,19 +201,3 @@ export const useAuthStore = createStore<AuthStore>({
     name: 'AuthStore',
   },
 });
-
-// Hook for using auth state
-export const useAuth = () =>
-  useAuthStore((state) => ({
-    user: state.user,
-    loading: state.loading,
-    isAuthenticated: state.isAuthenticated,
-    error: state.error,
-    isCheckingAuth: state.isCheckingAuth,
-    setUser: state.setUser,
-    setLoading: state.setLoading,
-    setError: state.setError,
-    clearError: state.clearError,
-    initializeAuth: state.initializeAuth,
-    logout: state.logout,
-  }));

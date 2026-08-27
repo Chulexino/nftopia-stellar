@@ -1,4 +1,4 @@
-import { ForbiddenException } from '@nestjs/common';
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
 
 // Anthropic() reads ANTHROPIC_API_KEY at construction time. Without one it
 // kicks off an async credential-chain lookup (profile files, WIF env vars)
@@ -13,7 +13,10 @@ import type { RunnableToolLike } from './tools/tool-set.types';
 import type { NftService } from '../nft/nft.service';
 import type { ListingService } from '../listing/listing.service';
 import type { CollectionService } from '../collection/collection.service';
+import type { OrderService } from '../order/order.service';
+import type { AuctionService } from '../auction/auction.service';
 import type { AiUsageService } from './ai-usage.service';
+import type { ChatSessionService } from './chat-session.service';
 
 describe('AiAgentService', () => {
   let service: AiAgentService;
@@ -23,16 +26,30 @@ describe('AiAgentService', () => {
     recordUsage: jest.fn(),
   };
 
+  const chatSessionService = {
+    loadOrCreateSession: jest.fn(),
+    appendExchange: jest.fn(),
+  };
+
+  const defaultLoadedSession = { session: { id: 'session-1' }, history: [] };
+
   beforeEach(() => {
     jest.clearAllMocks();
     aiUsageService.assertWithinCap.mockResolvedValue(undefined);
     aiUsageService.recordUsage.mockResolvedValue(undefined);
+    chatSessionService.loadOrCreateSession.mockResolvedValue(
+      defaultLoadedSession,
+    );
+    chatSessionService.appendExchange.mockResolvedValue(undefined);
 
     service = new AiAgentService(
       {} as NftService,
       {} as ListingService,
       {} as CollectionService,
+      {} as OrderService,
+      {} as AuctionService,
       aiUsageService as unknown as AiUsageService,
+      chatSessionService as unknown as ChatSessionService,
     );
   });
 
@@ -67,6 +84,7 @@ describe('AiAgentService', () => {
       ).rejects.toBeInstanceOf(ForbiddenException);
 
       expect(aiUsageService.assertWithinCap).toHaveBeenCalledWith('user-1');
+      expect(chatSessionService.loadOrCreateSession).not.toHaveBeenCalled();
       expect(toolRunner).not.toHaveBeenCalled();
       expect(aiUsageService.recordUsage).not.toHaveBeenCalled();
     });
@@ -74,7 +92,7 @@ describe('AiAgentService', () => {
     it('proceeds to call the Anthropic API when the caller is under their cap', async () => {
       const toolRunner = mockToolRunner(makeFinalMessage());
 
-      const reply = await service.chat(
+      const result = await service.chat(
         'user-1',
         'marketplace-assistant',
         'What NFTs are trending?',
@@ -82,7 +100,7 @@ describe('AiAgentService', () => {
 
       expect(aiUsageService.assertWithinCap).toHaveBeenCalledWith('user-1');
       expect(toolRunner).toHaveBeenCalled();
-      expect(reply).toBe('Here are the top listings.');
+      expect(result.reply).toBe('Here are the top listings.');
     });
   });
 
@@ -131,9 +149,13 @@ describe('AiAgentService', () => {
       );
       mockToolRunner(makeFinalMessage());
 
-      const reply = await service.chat('user-1', 'marketplace-assistant', 'hi');
+      const result = await service.chat(
+        'user-1',
+        'marketplace-assistant',
+        'hi',
+      );
 
-      expect(reply).toBe('Here are the top listings.');
+      expect(result.reply).toBe('Here are the top listings.');
       // recordUsage's promise is still pending — proves chat() didn't await it.
       resolveRecord();
     });
@@ -149,9 +171,149 @@ describe('AiAgentService', () => {
         }),
       );
 
-      const reply = await service.chat('user-1', 'marketplace-assistant', 'hi');
+      const result = await service.chat(
+        'user-1',
+        'marketplace-assistant',
+        'hi',
+      );
 
-      expect(reply).toBe('First line.\nSecond line.');
+      expect(result.reply).toBe('First line.\nSecond line.');
+    });
+  });
+
+  describe('conversation persistence (#487)', () => {
+    it('starts a new session when no sessionId is given, and returns its id', async () => {
+      chatSessionService.loadOrCreateSession.mockResolvedValue({
+        session: { id: 'new-session-1' },
+        history: [],
+      });
+      mockToolRunner(makeFinalMessage());
+
+      const result = await service.chat(
+        'user-1',
+        'marketplace-assistant',
+        'hi',
+      );
+
+      expect(chatSessionService.loadOrCreateSession).toHaveBeenCalledWith(
+        'user-1',
+        undefined,
+      );
+      expect(result.sessionId).toBe('new-session-1');
+    });
+
+    it('passes an existing sessionId through to load its history', async () => {
+      chatSessionService.loadOrCreateSession.mockResolvedValue({
+        session: { id: 'session-42' },
+        history: [
+          { role: 'user', content: 'Hi' },
+          { role: 'assistant', content: 'Hello, how can I help?' },
+        ],
+      });
+      const toolRunner = mockToolRunner(makeFinalMessage());
+
+      const result = await service.chat(
+        'user-1',
+        'marketplace-assistant',
+        'Tell me more',
+        'session-42',
+      );
+
+      expect(chatSessionService.loadOrCreateSession).toHaveBeenCalledWith(
+        'user-1',
+        'session-42',
+      );
+      const [requestArgs] = toolRunner.mock.calls[0] as [
+        { messages: { role: string; content: string }[] },
+      ];
+      expect(requestArgs.messages).toEqual([
+        { role: 'user', content: 'Hi' },
+        { role: 'assistant', content: 'Hello, how can I help?' },
+        { role: 'user', content: 'Tell me more' },
+      ]);
+      expect(result.sessionId).toBe('session-42');
+    });
+
+    it('never builds the model request from client-supplied history — only from what loadOrCreateSession returns', async () => {
+      chatSessionService.loadOrCreateSession.mockResolvedValue({
+        session: { id: 'session-1' },
+        history: [{ role: 'assistant', content: 'DB-backed prior turn' }],
+      });
+      const toolRunner = mockToolRunner(makeFinalMessage());
+
+      await service.chat('user-1', 'marketplace-assistant', 'next message');
+
+      const [requestArgs] = toolRunner.mock.calls[0] as [
+        { messages: { role: string; content: string }[] },
+      ];
+      expect(requestArgs.messages[0]).toEqual({
+        role: 'assistant',
+        content: 'DB-backed prior turn',
+      });
+    });
+
+    it('persists the user message and assistant reply after a successful call', async () => {
+      chatSessionService.loadOrCreateSession.mockResolvedValue({
+        session: { id: 'session-7' },
+        history: [],
+      });
+      mockToolRunner(
+        makeFinalMessage({ content: [{ type: 'text', text: 'The reply.' }] }),
+      );
+
+      await service.chat('user-1', 'marketplace-assistant', 'The question.');
+
+      expect(chatSessionService.appendExchange).toHaveBeenCalledWith(
+        'session-7',
+        'The question.',
+        'The reply.',
+      );
+    });
+
+    it('does not persist an exchange when the Anthropic call fails', async () => {
+      chatSessionService.loadOrCreateSession.mockResolvedValue(
+        defaultLoadedSession,
+      );
+      const client = (service as unknown as { client: unknown }).client as {
+        beta: { messages: { toolRunner: jest.Mock } };
+      };
+      client.beta.messages.toolRunner = jest
+        .fn()
+        .mockRejectedValue(new Error('boom'));
+
+      await expect(
+        service.chat('user-1', 'marketplace-assistant', 'hi'),
+      ).rejects.toThrow();
+
+      expect(chatSessionService.appendExchange).not.toHaveBeenCalled();
+    });
+
+    it('propagates NotFoundException for a sessionId that does not exist', async () => {
+      chatSessionService.loadOrCreateSession.mockRejectedValue(
+        new NotFoundException('Chat session missing-session not found'),
+      );
+
+      await expect(
+        service.chat(
+          'user-1',
+          'marketplace-assistant',
+          'hi',
+          'missing-session',
+        ),
+      ).rejects.toBeInstanceOf(NotFoundException);
+    });
+
+    it('propagates ForbiddenException when the session belongs to another user, without calling the Anthropic API', async () => {
+      chatSessionService.loadOrCreateSession.mockRejectedValue(
+        new ForbiddenException('You do not have access to this chat session'),
+      );
+      const toolRunner = mockToolRunner(makeFinalMessage());
+
+      await expect(
+        service.chat('user-2', 'marketplace-assistant', 'hi', 'user-1-session'),
+      ).rejects.toBeInstanceOf(ForbiddenException);
+
+      expect(toolRunner).not.toHaveBeenCalled();
     });
   });
 

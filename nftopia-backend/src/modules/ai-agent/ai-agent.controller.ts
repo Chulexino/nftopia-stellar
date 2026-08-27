@@ -75,17 +75,16 @@ export class AiAgentController {
   async chat(
     @Req() req: RequestWithUser,
     @Body() dto: ChatRequestDto,
-  ): Promise<{ reply: string }> {
+  ): Promise<{ reply: string; sessionId: string }> {
     if (!req.user?.userId) {
       throw new UnauthorizedException('Invalid JWT payload');
     }
-    const reply = await this.aiAgentService.chat(
+    return this.aiAgentService.chat(
       req.user.userId,
       TOOL_SET,
       dto.message,
-      dto.history,
+      dto.sessionId,
     );
-    return { reply };
   }
 
   // @Sse defaults to GET; override the method metadata to POST so the
@@ -104,7 +103,7 @@ export class AiAgentController {
       req.user.userId,
       TOOL_SET,
       dto.message,
-      dto.history,
+      dto.sessionId,
     );
   }
 
