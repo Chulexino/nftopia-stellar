@@ -15,6 +15,7 @@ const fakeDeps = {
   listingService: {} as never,
   collectionService: {} as never,
   orderService: {} as never,
+  auctionService: {} as never,
   userId: 'user-1',
 };
 

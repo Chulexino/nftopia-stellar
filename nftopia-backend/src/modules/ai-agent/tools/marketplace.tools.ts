@@ -4,8 +4,10 @@ import type { NftService } from '../../nft/nft.service';
 import type { ListingService } from '../../listing/listing.service';
 import type { CollectionService } from '../../collection/collection.service';
 import type { OrderService } from '../../order/order.service';
+import type { AuctionService } from '../../auction/auction.service';
 import { ListingStatus } from '../../listing/interfaces/listing.interface';
 import { OrderStatus, OrderType } from '../../order/dto/create-order.dto';
+import { AuctionStatus } from '../../auction/interfaces/auction.interface';
 
 /**
  * The exact tool names this builder is allowed to return — registered as
@@ -25,6 +27,9 @@ export const MARKETPLACE_TOOL_NAMES = [
   'get_top_collections',
   'search_orders',
   'get_order',
+  'search_auctions',
+  'get_auction',
+  'get_auction_bids',
 ] as const;
 
 export interface MarketplaceToolsDeps {
@@ -32,6 +37,7 @@ export interface MarketplaceToolsDeps {
   listingService: ListingService;
   collectionService: CollectionService;
   orderService: OrderService;
+  auctionService: AuctionService;
   /**
    * The authenticated caller, from the JWT — never from tool input.
    * search_orders/get_order use it to scope results server-side so the
@@ -52,6 +58,7 @@ export function buildMarketplaceTools(deps: MarketplaceToolsDeps) {
     listingService,
     collectionService,
     orderService,
+    auctionService,
     userId,
   } = deps;
 
@@ -217,6 +224,46 @@ export function buildMarketplaceTools(deps: MarketplaceToolsDeps) {
     },
   });
 
+  const searchAuctions = betaZodTool({
+    name: 'search_auctions',
+    description:
+      'Search marketplace auctions by status, seller, or the NFT contract/token being auctioned. Defaults to active (non-expired) auctions. Does not include bid history — use get_auction_bids for that.',
+    inputSchema: z.object({
+      status: z.nativeEnum(AuctionStatus).optional(),
+      sellerId: z.string().optional(),
+      nftContractId: z.string().optional(),
+      nftTokenId: z.string().optional(),
+      page: z.number().int().min(1).optional(),
+      limit: z.number().int().min(1).max(100).optional(),
+    }),
+    run: async (input) => {
+      const result = await auctionService.findAll(input);
+      return JSON.stringify(result);
+    },
+  });
+
+  const getAuction = betaZodTool({
+    name: 'get_auction',
+    description:
+      "Get full details for a single auction by its id (current price, reserve, start/end time, status). Does NOT include bid history or the current highest bidder — call get_auction_bids for that; don't assume bid state from this alone.",
+    inputSchema: z.object({ id: z.string() }),
+    run: async (input) => {
+      const auction = await auctionService.findOne(input.id);
+      return JSON.stringify(auction);
+    },
+  });
+
+  const getAuctionBids = betaZodTool({
+    name: 'get_auction_bids',
+    description:
+      'Get the full bid history for an auction, most recent first — including the current highest bid. Call this whenever a question depends on actual bid activity (e.g. "what is the highest bid", "has anyone bid on this"); get_auction alone is not enough to answer those.',
+    inputSchema: z.object({ auctionId: z.string() }),
+    run: async (input) => {
+      const bids = await auctionService.getBids(input.auctionId);
+      return JSON.stringify(bids);
+    },
+  });
+
   return [
     searchNfts,
     getNft,
@@ -228,5 +275,8 @@ export function buildMarketplaceTools(deps: MarketplaceToolsDeps) {
     getTopCollections,
     searchOrders,
     getOrder,
+    searchAuctions,
+    getAuction,
+    getAuctionBids,
   ];
 }

@@ -14,6 +14,7 @@ import type { NftService } from '../nft/nft.service';
 import type { ListingService } from '../listing/listing.service';
 import type { CollectionService } from '../collection/collection.service';
 import type { OrderService } from '../order/order.service';
+import type { AuctionService } from '../auction/auction.service';
 import type { AiUsageService } from './ai-usage.service';
 import type { ChatSessionService } from './chat-session.service';
 
@@ -46,6 +47,7 @@ describe('AiAgentService', () => {
       {} as ListingService,
       {} as CollectionService,
       {} as OrderService,
+      {} as AuctionService,
       aiUsageService as unknown as AiUsageService,
       chatSessionService as unknown as ChatSessionService,
     );

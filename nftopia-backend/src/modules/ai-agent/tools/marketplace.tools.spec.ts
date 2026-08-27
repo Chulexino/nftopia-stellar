@@ -16,6 +16,7 @@ describe('marketplace.tools — order tools (#488)', () => {
     nftService: {} as never,
     listingService: {} as never,
     collectionService: {} as never,
+    auctionService: {} as never,
   };
 
   const getTool = (name: string, userId = 'user-1'): RunnableToolLike => {
