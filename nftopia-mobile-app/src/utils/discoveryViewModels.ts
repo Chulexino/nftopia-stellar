@@ -80,7 +80,7 @@ export function mapNewListings(
     }));
 }
 
-function formatXlmAmount(value: string | null | undefined): string {
+export function formatXlmAmount(value: string | null | undefined): string {
   const num = Number(value);
   if (!value || Number.isNaN(num)) return '0';
   // Trim trailing zeros from Stellar's 7-decimal precision without losing

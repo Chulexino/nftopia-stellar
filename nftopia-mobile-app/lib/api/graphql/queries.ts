@@ -5,25 +5,8 @@ import {
   COLLECTION_CARD_FIELDS_FRAGMENT,
   LISTING_CARD_FIELDS_FRAGMENT,
   NFT_CARD_FIELDS_FRAGMENT,
+  MARKETPLACE_LISTING_FIELDS_FRAGMENT,
 } from './fragments';
-
-export const GET_NFTS_QUERY = gql`
-  ${NFT_FIELDS_FRAGMENT}
-  query GetNFTs($first: Int, $after: String) {
-    nfts(first: $first, after: $after) {
-      edges {
-        cursor
-        node {
-          ...NFTFields
-        }
-      }
-      pageInfo {
-        hasNextPage
-        endCursor
-      }
-    }
-  }
-`;
 
 export const GET_NFT_BY_ID_QUERY = gql`
   ${NFT_FIELDS_FRAGMENT}
@@ -60,6 +43,26 @@ export const GET_NEW_LISTINGS_QUERY = gql`
         cursor
         node {
           ...ListingCardFields
+        }
+      }
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+      totalCount
+    }
+  }
+`;
+
+// Marketplace grid: cursor-paginated active listings with search/category/sort filters.
+export const GET_MARKETPLACE_LISTINGS_QUERY = gql`
+  ${MARKETPLACE_LISTING_FIELDS_FRAGMENT}
+  query GetMarketplaceListings($pagination: PaginationInput, $filter: ListingFilterInput) {
+    listings(pagination: $pagination, filter: $filter) {
+      edges {
+        cursor
+        node {
+          ...MarketplaceListingFields
         }
       }
       pageInfo {
