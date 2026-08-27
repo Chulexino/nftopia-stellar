@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   content: { padding: spacing.lg, paddingBottom: spacing.xl * 2 },
   title: { color: colors.text, fontSize: 30, fontWeight: '700', marginBottom: spacing.lg },
-  section: { backgroundColor: colors.card, borderRadius: borderRadius.md, padding: spacing.md, marginBottom: spacing.md },
+  section: { backgroundColor: colors.surface, borderRadius: borderRadius.md, padding: spacing.md, marginBottom: spacing.md },
   sectionTitle: { color: colors.text, fontSize: 18, fontWeight: '700', marginBottom: spacing.sm },
   row: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', minHeight: 48 },
   label: { color: colors.text, fontSize: 16 },
