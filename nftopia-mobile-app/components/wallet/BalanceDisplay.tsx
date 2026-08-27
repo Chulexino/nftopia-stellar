@@ -10,6 +10,7 @@ interface BalanceDisplayProps {
   error?: string | null;
   onRefresh?: () => void;
   publicKey?: string;
+  onReceive?: () => void;
 }
 
 export default function BalanceDisplay({
@@ -19,6 +20,7 @@ export default function BalanceDisplay({
   error,
   onRefresh,
   publicKey,
+  onReceive,
 }: BalanceDisplayProps) {
   return (
     <View style={styles.container}>
@@ -32,9 +34,16 @@ export default function BalanceDisplay({
       </View>
 
       {publicKey ? (
-        <Text style={styles.publicKey} numberOfLines={1}>
-          {publicKey.slice(0, 8)}...{publicKey.slice(-8)}
-        </Text>
+        <View style={styles.publicKeyRow}>
+          <Text style={styles.publicKey} numberOfLines={1}>
+            {publicKey.slice(0, 8)}...{publicKey.slice(-8)}
+          </Text>
+          {onReceive && (
+            <TouchableOpacity onPress={onReceive} style={styles.receiveButton} accessibilityRole="button" accessibilityLabel="Receive funds">
+              <Text style={styles.receiveButtonText}>Receive</Text>
+            </TouchableOpacity>
+          )}
+        </View>
       ) : null}
 
       {error ? (
@@ -63,7 +72,7 @@ export default function BalanceDisplay({
             </View>
           ))}
 
-          {(!tokenBalances || tokenBalances.length === 0) && xlmBalance !== null && (
+         {(!tokenBalances || tokenBalances.length === 0) && xlmBalance !== null && (
             <Text style={styles.noTokens}>No token balances</Text>
           )}
         </>
@@ -95,11 +104,29 @@ const styles = StyleSheet.create({
     color: colors.info,
     fontWeight: '500',
   },
+  publicKeyRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.md,
+  },
   publicKey: {
     fontSize: 12,
     color: colors.textTertiary,
     fontFamily: 'monospace',
-    marginBottom: spacing.md,
+    flexShrink: 1,
+    marginRight: spacing.sm,
+  },
+  receiveButton: {
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    backgroundColor: colors.info,
+    borderRadius: borderRadius.sm,
+  },
+  receiveButtonText: {
+    color: colors.background,
+    fontSize: 12,
+    fontWeight: '600',
   },
   balanceRow: {
     flexDirection: 'row',
