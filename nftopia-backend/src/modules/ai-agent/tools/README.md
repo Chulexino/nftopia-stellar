@@ -51,13 +51,14 @@ is no default, so a new endpoint-specific method cannot forget to pick one.
 | ----------------------- | ---------------------------------------- | ----------- | ------------ | ----------- |
 | `marketplace-assistant` | `POST /ai/chat`, `POST /ai/chat/stream`  | Any authenticated user | Read-only    | Implemented (`marketplace.tools.ts`) |
 | `creator-copilot`       | *Planned:* `POST /ai/copilot/draft-listing` | NFT creator/owner | Write-capable (drafts a listing on the caller's own NFT) | Not yet implemented |
-| `moderation`            | *Planned:* moderation review endpoints   | Admin/moderator only | Write-capable (e.g. `flag_content`) | Not yet implemented |
+| `moderation`            | Not chat-driven — the `ListingCreatedListener` enqueues a job on the `ai-moderation` Bull queue; a *planned* processor (follow-up issue) resolves this tool set and runs the moderation agent per job. Findings surface via `GET /admin/ai/flags` / `PATCH /admin/ai/flags/:id`. | System (queue worker) only | Write-capable (`flag_content` persists to `content_flags`) | Tool implemented (`moderation.tools.ts`); queue consumer not yet built |
 | `trading`               | *Planned:* trading-proposal endpoints    | Any authenticated user, scoped to their own orders | Write-capable (proposes trades) | Not yet implemented |
 
-`marketplace-assistant` is the only tool set with a registered builder
-today; requesting any other name from `resolveToolSet` throws until its
-tools file registers one. When one of the planned sets is implemented,
-add its entry to this table in the same PR.
+`marketplace-assistant` and `moderation` are the tool sets with a
+registered builder today; requesting `creator-copilot` or `trading` from
+`resolveToolSet` throws until their tools files register one. When one of
+the planned sets is implemented, add its entry to this table in the same
+PR.
 
 ## Adding a new tool set
 

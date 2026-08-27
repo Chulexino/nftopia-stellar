@@ -47,16 +47,18 @@ export const NFTCardSkeleton: React.FC<NFTCardSkeletonProps> = ({
 export interface MarketplaceCardSkeletonProps {
   count?: number;
   animated?: boolean;
+  variant?: 'default' | 'grid';
 }
 
 export const MarketplaceCardSkeleton: React.FC<MarketplaceCardSkeletonProps> = ({
   count = 3,
   animated = true,
+  variant = 'default',
 }) => {
   return (
-    <View style={styles.container}>
+    <View style={variant === 'grid' ? styles.gridContainer : styles.container}>
       {Array.from({ length: count }).map((_, index) => (
-        <NFTCardSkeleton key={index} variant="default" animated={animated} />
+        <NFTCardSkeleton key={index} variant={variant} animated={animated} />
       ))}
     </View>
   );

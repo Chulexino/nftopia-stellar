@@ -164,7 +164,21 @@
   "marketplace": {
     "title": "السوق",
     "searchPlaceholder": "بحث عن NFTs...",
-    "filters": "تصفية",
+    "filters": {
+      "trigger": "تصفية",
+      "title": "تصفية",
+      "category": "الفئة",
+      "status": "الحالة",
+      "statusAll": "الكل",
+      "statusActive": "نشط",
+      "statusSold": "مباع",
+      "priceRange": "نطاق السعر (XLM)",
+      "minPrice": "الحد الأدنى",
+      "maxPrice": "الحد الأقصى",
+      "apply": "تطبيق التصفية",
+      "clearAll": "مسح الكل",
+      "priceRangeInvalid": "لا يمكن أن يكون الحد الأدنى للسعر أكبر من الحد الأقصى"
+    },
     "sortBy": "ترتيب حسب",
     "newest": "الأحدث",
     "oldest": "الأقدم",

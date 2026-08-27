@@ -9,6 +9,11 @@ import {
   MARKETPLACE_TOOL_NAMES,
   type MarketplaceToolsDeps,
 } from './marketplace.tools';
+import {
+  buildModerationTools,
+  MODERATION_TOOL_NAMES,
+  type ModerationToolsDeps,
+} from './moderation.tools';
 
 const registry = new Map<ToolSetName, ToolSetRegistration>();
 
@@ -39,6 +44,12 @@ registerToolSet<MarketplaceToolsDeps>(
   'marketplace-assistant',
   buildMarketplaceTools,
   MARKETPLACE_TOOL_NAMES,
+);
+
+registerToolSet<ModerationToolsDeps>(
+  'moderation',
+  buildModerationTools,
+  MODERATION_TOOL_NAMES,
 );
 
 /**
