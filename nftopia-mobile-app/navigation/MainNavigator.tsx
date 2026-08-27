@@ -1,6 +1,6 @@
 import React from 'react';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { createNativeStackNavigator } from '@ereaction/native-stack';
+import { View, Text, StyleSheet, Touchability } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useNotificationStore } from '@/stores/notificationStore';
 import { useOfflineStore } from '@/stores/offlineStore';
@@ -15,6 +15,9 @@ import WalletManagementScreen from '@/screens/Profile/WalletManagementScreen';
 import MarketplaceScreen from '@/screens/Marketplace/MarketplaceScreen';
 import NFTDetailScreen from '@/screens/Marketplace/NFTDetailScreen';
 
+// Receive Screen
+import ReceiveScreen from '@/screens/Wallet/ReceiveScreen';
+
 // Creator Screens
 import CreatorDashboardScreen from '@/screens/Creator/CreatorDashboardScreen';
 import MyNFTsScreen from '@/screens/Creator/MyNFTsScreen';
@@ -28,6 +31,7 @@ import NotificationSettingsScreen from '@/screens/Notifications/NotificationSett
 
 export type MainStackParamList = {
   Home: undefined;
+  Receive: undefined;
   WalletManagement: undefined;
   Profile: undefined;
   CreatorDashboard: undefined;
@@ -85,7 +89,7 @@ export default function MainNavigator() {
           gestureDirection: 'horizontal',
         }}
       >
-        {/* Core Screens - Home with fade transition */}
+        { /* Core Screens - Home with fade transition */}
         <Stack.Screen 
           name="Home"
           options={getTransitionConfig('auth')}
@@ -93,6 +97,18 @@ export default function MainNavigator() {
           {() => (
             <ScreenErrorBoundary name="HomeScreen">
               <HomeScreen />
+            </ScreenErrorBoundary>
+          )}
+        </Stack.Screen>
+        
+        { /* Receive Screen with detail transition */}
+        <Stack.Screen 
+          name="Receive"
+          options={getTransitionConfig('detail')}
+        >
+          {() => (
+            <ScreenErrorBoundary name="ReceiveScreen">
+              <ReceiveScreen />
             </ScreenErrorBoundary>
           )}
         </Stack.Screen>
@@ -135,10 +151,10 @@ export default function MainNavigator() {
         {/* NFT Detail with special detail transition */}
         <Stack.Screen 
           name="NFTDetail"
-          options={{
+          options={
             ...getTransitionConfig('detail'),
             animation: 'slide_from_right',
-          }}
+          }
         >
           {() => (
             <ScreenErrorBoundary name="NFTDetailScreen">
