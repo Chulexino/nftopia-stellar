@@ -182,9 +182,9 @@ describe('AiAgentService', () => {
     });
 
     it('rejects a request for a tool set with no registered builder', async () => {
-      await expect(service.chat('user-1', 'moderation', 'hi')).rejects.toThrow(
-        /not registered/,
-      );
+      await expect(
+        service.chat('user-1', 'creator-copilot', 'hi'),
+      ).rejects.toThrow(/not registered/);
     });
   });
 });
