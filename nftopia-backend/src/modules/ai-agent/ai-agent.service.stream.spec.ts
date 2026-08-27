@@ -6,6 +6,7 @@ import type { NftService } from '../nft/nft.service';
 import type { ListingService } from '../listing/listing.service';
 import type { CollectionService } from '../collection/collection.service';
 import type { AiUsageService } from './ai-usage.service';
+import type { ChatSessionService } from './chat-session.service';
 
 // Anthropic() reads ANTHROPIC_API_KEY at construction time — see
 // ai-agent.service.spec.ts for why this must be set before import.
@@ -98,16 +99,27 @@ describe('AiAgentService.chatStream', () => {
     recordUsage: jest.fn(),
   };
 
+  const chatSessionService = {
+    loadOrCreateSession: jest.fn(),
+    appendExchange: jest.fn(),
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
     aiUsageService.assertWithinCap.mockResolvedValue(undefined);
     aiUsageService.recordUsage.mockResolvedValue(undefined);
+    chatSessionService.loadOrCreateSession.mockResolvedValue({
+      session: { id: 'session-1' },
+      history: [],
+    });
+    chatSessionService.appendExchange.mockResolvedValue(undefined);
 
     service = new AiAgentService(
       {} as NftService,
       {} as ListingService,
       {} as CollectionService,
       aiUsageService as unknown as AiUsageService,
+      chatSessionService as unknown as ChatSessionService,
     );
   });
 
@@ -155,7 +167,10 @@ describe('AiAgentService.chatStream', () => {
 
       const doneEvent = events[events.length - 1];
       expect(doneEvent.type).toBe('done');
-      expect(doneEvent.data).toEqual({ reply: 'Here are results.' });
+      expect(doneEvent.data).toEqual({
+        reply: 'Here are results.',
+        sessionId: 'session-1',
+      });
     });
 
     it('emits a distinct tool_call event when the model starts a tool_use block', async () => {
@@ -216,6 +231,95 @@ describe('AiAgentService.chatStream', () => {
     });
   });
 
+  describe('conversation persistence (#487)', () => {
+    it('loads history from the session and builds the model request from it, not from a history param', async () => {
+      chatSessionService.loadOrCreateSession.mockResolvedValue({
+        session: { id: 'session-99' },
+        history: [{ role: 'user', content: 'Earlier turn from the database' }],
+      });
+      const runner = makeFakeStreamingRunner([
+        {
+          events: [textDelta('ok')],
+          finalMessage: {
+            model: 'claude-opus-5',
+            stop_reason: 'end_turn',
+            usage: { input_tokens: 10, output_tokens: 5 },
+          },
+        },
+      ]);
+      const toolRunner = mockToolRunner(runner);
+
+      await collect(
+        service.chatStream(
+          'user-1',
+          'marketplace-assistant',
+          'next message',
+          'session-99',
+        ),
+      );
+
+      expect(chatSessionService.loadOrCreateSession).toHaveBeenCalledWith(
+        'user-1',
+        'session-99',
+      );
+      const [requestArgs] = toolRunner.mock.calls[0] as [
+        { messages: { role: string; content: string }[] },
+      ];
+      expect(requestArgs.messages[0]).toEqual({
+        role: 'user',
+        content: 'Earlier turn from the database',
+      });
+    });
+
+    it('persists the exchange before emitting the terminal done event', async () => {
+      chatSessionService.loadOrCreateSession.mockResolvedValue({
+        session: { id: 'session-5' },
+        history: [],
+      });
+      const runner = makeFakeStreamingRunner([
+        {
+          events: [textDelta('The reply.')],
+          finalMessage: {
+            model: 'claude-opus-5',
+            stop_reason: 'end_turn',
+            usage: { input_tokens: 10, output_tokens: 5 },
+          },
+        },
+      ]);
+      mockToolRunner(runner);
+
+      await collect(
+        service.chatStream('user-1', 'marketplace-assistant', 'The question.'),
+      );
+
+      expect(chatSessionService.appendExchange).toHaveBeenCalledWith(
+        'session-5',
+        'The question.',
+        'The reply.',
+      );
+    });
+
+    it('propagates ForbiddenException when the session belongs to another user', async () => {
+      chatSessionService.loadOrCreateSession.mockRejectedValue(
+        new ForbiddenException('You do not have access to this chat session'),
+      );
+      const toolRunner = mockToolRunner(makeFakeStreamingRunner([]));
+
+      const { events, error } = await collect(
+        service.chatStream(
+          'user-2',
+          'marketplace-assistant',
+          'hi',
+          'user-1-session',
+        ),
+      );
+
+      expect(events).toHaveLength(0);
+      expect(error).toBeInstanceOf(ForbiddenException);
+      expect(toolRunner).not.toHaveBeenCalled();
+    });
+  });
+
   describe('pause_turn resume', () => {
     it('pushes the paused turn back and continues without truncating the reply', async () => {
       const runner = makeFakeStreamingRunner([
@@ -258,6 +362,7 @@ describe('AiAgentService.chatStream', () => {
       expect(doneEvent.data).toEqual({
         reply:
           'Partial answer before pausing. Rest of the answer after resuming.',
+        sessionId: 'session-1',
       });
 
       // Usage is recorded from the final (post-resume) message, not the
@@ -309,7 +414,10 @@ describe('AiAgentService.chatStream', () => {
       expect(runner.pushMessages).toHaveBeenCalledTimes(2);
 
       const doneEvent = events[events.length - 1];
-      expect(doneEvent.data).toEqual({ reply: 'One. Two. Three.' });
+      expect(doneEvent.data).toEqual({
+        reply: 'One. Two. Three.',
+        sessionId: 'session-1',
+      });
     });
   });
 

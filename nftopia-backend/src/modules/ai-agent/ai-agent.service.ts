@@ -17,8 +17,8 @@ import { ListingService } from '../listing/listing.service';
 import { CollectionService } from '../collection/collection.service';
 import { resolveToolSet } from './tools/tool-set.registry';
 import type { ToolSetName } from './tools/tool-set.types';
-import { ChatTurnDto } from './dto/chat-request.dto';
 import { AiUsageService } from './ai-usage.service';
+import { ChatSessionService } from './chat-session.service';
 
 const SYSTEM_PROMPT = `You are the NFTopia marketplace assistant. You help users find NFTs, \
 listings, and collections on the NFTopia Stellar marketplace using the tools available to you. \
@@ -35,15 +35,21 @@ export class AiAgentService {
     private readonly listingService: ListingService,
     private readonly collectionService: CollectionService,
     private readonly aiUsageService: AiUsageService,
+    private readonly chatSessionService: ChatSessionService,
   ) {}
 
   async chat(
     userId: string,
     toolSet: ToolSetName,
     message: string,
-    history: ChatTurnDto[] = [],
-  ): Promise<string> {
+    sessionId?: string,
+  ): Promise<{ reply: string; sessionId: string }> {
     await this.aiUsageService.assertWithinCap(userId);
+
+    // History always comes from the database — never from client input —
+    // and ownership of an existing session is enforced here too (#487).
+    const { session, history } =
+      await this.chatSessionService.loadOrCreateSession(userId, sessionId);
 
     const tools = resolveToolSet(toolSet, {
       nftService: this.nftService,
@@ -82,10 +88,14 @@ export class AiAgentService {
         (block): block is Extract<typeof block, { type: 'text' }> =>
           block.type === 'text',
       );
-      return textBlocks
+      const reply = textBlocks
         .map((block) => block.text)
         .join('\n')
         .trim();
+
+      await this.chatSessionService.appendExchange(session.id, message, reply);
+
+      return { reply, sessionId: session.id };
     } catch (error) {
       throw this.mapAnthropicError(error);
     }
@@ -109,7 +119,7 @@ export class AiAgentService {
     userId: string,
     toolSet: ToolSetName,
     message: string,
-    history: ChatTurnDto[] = [],
+    sessionId?: string,
   ): Observable<MessageEvent> {
     return new Observable<MessageEvent>((subscriber) => {
       let unsubscribed = false;
@@ -117,6 +127,12 @@ export class AiAgentService {
       void (async () => {
         try {
           await this.aiUsageService.assertWithinCap(userId);
+
+          const { session, history } =
+            await this.chatSessionService.loadOrCreateSession(
+              userId,
+              sessionId,
+            );
 
           const tools = resolveToolSet(toolSet, {
             nftService: this.nftService,
@@ -195,9 +211,16 @@ export class AiAgentService {
             finalMessage.usage.output_tokens,
           );
 
+          const reply = replyParts.join('').trim();
+          await this.chatSessionService.appendExchange(
+            session.id,
+            message,
+            reply,
+          );
+
           subscriber.next({
             type: 'done',
-            data: { reply: replyParts.join('').trim() },
+            data: { reply, sessionId: session.id },
           });
           subscriber.complete();
         } catch (error) {
