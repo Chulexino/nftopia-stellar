@@ -10,6 +10,7 @@ import { SessionManager } from './src/components/SessionManager';
 import { AppLockManager } from './src/components/AppLockManager';
 import { PrivacyOverlay } from './src/components/PrivacyOverlay';
 import { setupApollo } from './lib/api/apolloClient';
+import BackupReminderManager from './components/wallet/BackupReminderManager';
 
 export default function App() {
   const [client, setClient] = useState<ApolloClient<NormalizedCacheObject> | undefined>();
@@ -35,6 +36,7 @@ export default function App() {
             <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
             <NetworkStatusManager />
             <SessionManager />
+            <BackupReminderManager />
             <ConnectivityBanner />
             <AppNavigator />
             <ToastProvider />

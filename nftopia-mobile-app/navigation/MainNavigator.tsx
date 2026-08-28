@@ -26,9 +26,12 @@ import EarningsScreen from '@/screens/Creator/EarningsScreen';
 import NotificationsScreen from '@/screens/Notifications/NotificationsScreen';
 import NotificationSettingsScreen from '@/screens/Notifications/NotificationSettingsScreen';
 
+// Backup Reminder Screen
+import BackupReminderScreen from '@/screens/BackupReminder/BackupReminderScreen';
+
 export type MainStackParamList = {
   Home: undefined;
-  WalletManagement: undefined;
+  WalletManagement: { autoExport?: boolean } | undefined;
   Profile: undefined;
   CreatorDashboard: undefined;
   MyNFTs: undefined;
@@ -41,6 +44,7 @@ export type MainStackParamList = {
   Notifications: undefined;
   NotificationSettings: undefined;
   Marketplace: { category?: string } | undefined;
+  BackupReminder: undefined;
 };
 
 const Stack = createNativeStackNavigator<MainStackParamList>();
@@ -222,6 +226,18 @@ export default function MainNavigator() {
           {() => (
             <ScreenErrorBoundary name="NotificationSettingsScreen">
               <NotificationSettingsScreen />
+            </ScreenErrorBoundary>
+          )}
+        </Stack.Screen>
+
+        {/* Backup Reminder Screen with modal transition */}
+        <Stack.Screen 
+          name="BackupReminder"
+          options={getTransitionConfig('modal')}
+        >
+          {() => (
+            <ScreenErrorBoundary name="BackupReminderScreen">
+              <BackupReminderScreen />
             </ScreenErrorBoundary>
           )}
         </Stack.Screen>
