@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.sm,
     paddingVertical: 2,
     borderWidth: 1,
-    borderColor: colors.warningBorder,
+    borderColor: colors.warning,
   },
   warningBadgeText: {
     fontSize: 11,

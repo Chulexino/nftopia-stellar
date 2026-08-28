@@ -235,9 +235,9 @@ export default function MainNavigator() {
           name="BackupReminder"
           options={getTransitionConfig('modal')}
         >
-          {() => (
+          {(props) => (
             <ScreenErrorBoundary name="BackupReminderScreen">
-              <BackupReminderScreen />
+              <BackupReminderScreen {...props} />
             </ScreenErrorBoundary>
           )}
         </Stack.Screen>
