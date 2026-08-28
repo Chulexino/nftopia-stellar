@@ -9,6 +9,7 @@ import { NetworkStatusManager } from './src/components/NetworkStatusManager';
 import { SessionManager } from './src/components/SessionManager';
 import { AppLockManager } from './src/components/AppLockManager';
 import { PrivacyOverlay } from './src/components/PrivacyOverlay';
+import { VersionCheckManager } from './src/components/VersionCheckManager';
 import { setupApollo } from './lib/api/apolloClient';
 
 export default function App() {
@@ -31,6 +32,7 @@ export default function App() {
       <AppLayout>
         <PrivacyOverlay />
         <AppLockManager>
+          <VersionCheckManager />
           <SafeAreaView style={styles.container}>
             <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
             <NetworkStatusManager />
