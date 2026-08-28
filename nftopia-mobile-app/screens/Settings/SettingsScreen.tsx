@@ -46,6 +46,7 @@ export default function SettingsScreen({ navigation }: Props) {
         <Toggle label="Push notifications" value={preferences.notificationsEnabled} onChange={preferences.setNotificationsEnabled} />
         <Toggle label="Sound" value={preferences.soundEnabled} onChange={preferences.setSoundEnabled} />
         <Toggle label="Vibration" value={preferences.vibrationEnabled} onChange={preferences.setVibrationEnabled} />
+        <Pressable accessibilityRole="button" style={styles.link} onPress={() => navigation.navigate('NotificationSettings')}><Text style={styles.linkText}>Manage notification categories & quiet hours →</Text></Pressable>
       </Section>
 
       <Section title="Security">
