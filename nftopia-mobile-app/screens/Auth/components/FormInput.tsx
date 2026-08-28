@@ -1,7 +1,14 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  TouchableOpacity,
+  TextInputProps,
+} from 'react-native';
 
-interface FormInputProps {
+export interface FormInputProps {
   label: string;
   placeholder: string;
   value: string;
@@ -15,6 +22,14 @@ interface FormInputProps {
   testID?: string;
   multiline?: boolean;
   numberOfLines?: number;
+  /** Label for the return key (e.g. "next", "done"). */
+  returnKeyType?: TextInputProps['returnKeyType'];
+  /** Called when the user presses the return key. Use for focus chaining. */
+  onSubmitEditing?: () => void;
+  /** Dismiss the keyboard after submit (defaults true for single-line). */
+  blurOnSubmit?: boolean;
+  /** Imperative handle to programmatically focus the input. */
+  inputRef?: React.Ref<TextInput>;
 }
 
 export default function FormInput({
@@ -31,6 +46,10 @@ export default function FormInput({
   testID,
   multiline = false,
   numberOfLines = 1,
+  returnKeyType,
+  onSubmitEditing,
+  blurOnSubmit,
+  inputRef,
 }: FormInputProps) {
   const [isFocused, setIsFocused] = useState(false);
 
@@ -38,6 +57,7 @@ export default function FormInput({
     <View style={styles.container}>
       <Text style={styles.label}>{label}</Text>
       <TextInput
+        ref={inputRef}
         style={[
           styles.input,
           isFocused ? styles.inputFocused : undefined,
@@ -54,6 +74,9 @@ export default function FormInput({
         autoCapitalize={autoCapitalize}
         autoCorrect={autoCorrect}
         editable={editable}
+        returnKeyType={returnKeyType}
+        onSubmitEditing={onSubmitEditing}
+        blurOnSubmit={blurOnSubmit}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
         testID={testID}
