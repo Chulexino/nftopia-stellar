@@ -26,6 +26,7 @@ import EarningsScreen from '@/screens/Creator/EarningsScreen';
 import NotificationsScreen from '@/screens/Notifications/NotificationsScreen';
 import NotificationSettingsScreen from '@/screens/Notifications/NotificationSettingsScreen';
 import SettingsScreen from '@/screens/Settings/SettingsScreen';
+import { SendScreen } from '@/screens/Wallet/SendScreen';
 
 export type MainStackParamList = {
   Home: undefined;
@@ -42,6 +43,7 @@ export type MainStackParamList = {
   Notifications: undefined;
   NotificationSettings: undefined;
   Settings: undefined;
+  Send: { prefilledAddress?: string } | undefined;
   Marketplace: { category?: string } | undefined;
 };
 
@@ -121,6 +123,8 @@ export default function MainNavigator() {
             </ScreenErrorBoundary>
           )}
         </Stack.Screen>
+
+        <Stack.Screen name="Send" component={SendScreen} />
         
         {/* Marketplace with detail transition */}
         <Stack.Screen 

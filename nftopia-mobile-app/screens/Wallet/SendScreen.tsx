@@ -15,6 +15,8 @@ import {
   useAddressBookStore,
   isValidStellarAddress,
 } from '@/stores/addressBookStore';
+import { useWalletStore } from '@/stores/walletStore';
+import { StellarWalletService } from '@/src/services/stellar/wallet.service';
 
 interface SendScreenProps {
   navigation?: any;
@@ -23,6 +25,7 @@ interface SendScreenProps {
 }
 
 export function SendScreen({ navigation, route, onSend }: SendScreenProps) {
+  const { wallets, activePublicKey, network } = useWalletStore();
   const { entries, recentRecipients, getRecentRecipients, addRecentRecipient } = useAddressBookStore();
 
   const [recipient, setRecipient] = useState(route?.params?.prefilledAddress || '');
@@ -90,8 +93,11 @@ export function SendScreen({ navigation, route, onSend }: SendScreenProps) {
       if (onSend) {
         await onSend({ address: recipient.trim(), amount: amount.trim(), memo: memo.trim() || undefined });
       } else {
-        // Placeholder: in real app call wallet service
-        Alert.alert('Sent', `Would send ${amount} XLM to ${recipient}`);
+        const wallet = wallets.find((item) => item.publicKey === activePublicKey);
+        if (!wallet) throw new Error('Connect a wallet before sending');
+        const service = new StellarWalletService(undefined, network);
+        await service.sendPayment(wallet.secretKey, recipient.trim(), amount.trim(), 'XLM', undefined, memo.trim() || undefined);
+        Alert.alert('Sent', `${amount.trim()} XLM sent successfully`);
       }
       // Record as recent recipient (unless already saved – still useful, but filtered in suggestions)
       addRecentRecipient(recipient.trim());
