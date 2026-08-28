@@ -25,6 +25,7 @@ import EarningsScreen from '@/screens/Creator/EarningsScreen';
 // Notification Screens
 import NotificationsScreen from '@/screens/Notifications/NotificationsScreen';
 import NotificationSettingsScreen from '@/screens/Notifications/NotificationSettingsScreen';
+import SettingsScreen from '@/screens/Settings/SettingsScreen';
 
 export type MainStackParamList = {
   Home: undefined;
@@ -40,6 +41,7 @@ export type MainStackParamList = {
   Transactions: undefined;
   Notifications: undefined;
   NotificationSettings: undefined;
+  Settings: undefined;
   Marketplace: { category?: string } | undefined;
 };
 
@@ -224,6 +226,10 @@ export default function MainNavigator() {
               <NotificationSettingsScreen />
             </ScreenErrorBoundary>
           )}
+        </Stack.Screen>
+
+        <Stack.Screen name="Settings" options={getTransitionConfig('modal')}>
+          {(props) => <ScreenErrorBoundary name="SettingsScreen"><SettingsScreen {...props} /></ScreenErrorBoundary>}
         </Stack.Screen>
       </Stack.Navigator>
     </View>
