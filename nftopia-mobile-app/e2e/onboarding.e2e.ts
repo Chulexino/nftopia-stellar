@@ -1,3 +1,5 @@
+import { by, device, element, expect } from 'detox';
+
 describe('onboarding and wallet import', () => {
   beforeAll(async () => {
     await device.launchApp({ newInstance: true });
