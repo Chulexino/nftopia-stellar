@@ -25,6 +25,7 @@ import EarningsScreen from '@/screens/Creator/EarningsScreen';
 // Notification Screens
 import NotificationsScreen from '@/screens/Notifications/NotificationsScreen';
 import NotificationSettingsScreen from '@/screens/Notifications/NotificationSettingsScreen';
+import SettingsScreen from '@/screens/Settings/SettingsScreen';
 
 // Backup Reminder Screen
 import BackupReminderScreen from '@/screens/BackupReminder/BackupReminderScreen';
@@ -43,6 +44,7 @@ export type MainStackParamList = {
   Transactions: undefined;
   Notifications: undefined;
   NotificationSettings: undefined;
+  Settings: undefined;
   Marketplace: { category?: string } | undefined;
   BackupReminder: undefined;
 };
@@ -230,16 +232,8 @@ export default function MainNavigator() {
           )}
         </Stack.Screen>
 
-        {/* Backup Reminder Screen with modal transition */}
-        <Stack.Screen 
-          name="BackupReminder"
-          options={getTransitionConfig('modal')}
-        >
-          {(props) => (
-            <ScreenErrorBoundary name="BackupReminderScreen">
-              <BackupReminderScreen {...props} />
-            </ScreenErrorBoundary>
-          )}
+        <Stack.Screen name="Settings" options={getTransitionConfig('modal')}>
+          {(props) => <ScreenErrorBoundary name="SettingsScreen"><SettingsScreen {...props} /></ScreenErrorBoundary>}
         </Stack.Screen>
       </Stack.Navigator>
     </View>
