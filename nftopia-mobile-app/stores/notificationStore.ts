@@ -2,8 +2,9 @@ import { createStore } from '@/src/utils/store.factory';
 import { Notification, NotificationPreferences } from '@/types';
 import apiClient from '@/lib/api/sample';
 import { pushNotificationService } from '@/src/services/pushNotification.service';
+import { DEFAULT_QUIET_HOURS } from '@/src/utils/notificationSchedule';
 
-export const VERSION = 1;
+export const VERSION = 2;
 
 const defaultPreferences: NotificationPreferences = {
   outbid: true,
@@ -15,6 +16,7 @@ const defaultPreferences: NotificationPreferences = {
   offer: true,
   transfer: true,
   pushEnabled: true,
+  quietHours: DEFAULT_QUIET_HOURS,
 };
 
 interface NotificationStore {
@@ -150,6 +152,17 @@ export const useNotificationStore = createStore<NotificationStore>({
     enabled: true,
     name: 'notification-storage',
     version: VERSION,
+    // v1 -> v2: added `preferences.quietHours`. Older persisted state has no
+    // such field; without this, hydrating it would leave `quietHours`
+    // `undefined` and crash the first read (e.g. `isWithinQuietHours`).
+    migrate: async (state: any) => ({
+      ...state,
+      preferences: {
+        ...defaultPreferences,
+        ...state?.preferences,
+        quietHours: state?.preferences?.quietHours ?? DEFAULT_QUIET_HOURS,
+      },
+    }),
     partialize: (state: NotificationStore) => ({
       notifications: state.notifications,
       unreadCount: state.unreadCount,
