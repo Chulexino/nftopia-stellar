@@ -12,6 +12,7 @@ import { ThemeToggle } from '@/src/components/ThemeToggle';
 import { withErrorBoundary } from '@/src/hoc/withErrorBoundary';
 import { errorLogger } from '@/src/errors/logger';
 import { useTheme } from '@/src/theme/ThemeContext';
+import { useFavoritesStore } from '@/stores/favoritesStore';
 
 type Props = NativeStackScreenProps<MainStackParamList, 'Profile'>;
 
@@ -22,6 +23,9 @@ function ProfileContent({ navigation }: Props) {
   const { language } = useLanguageStore();
   const { colors, isDark } = useTheme();
   const [showLockTimeoutPicker, setShowLockTimeoutPicker] = useState(false);
+  const favoriteCount = useFavoritesStore(
+    (s) => s.favorites.length + s.favoriteCollections.length
+  );
 
   const handleSignOut = () => {
     Alert.alert(
@@ -121,6 +125,25 @@ function ProfileContent({ navigation }: Props) {
     arrow: {
       fontSize: 18,
       color: colors.textTertiary,
+    },
+    favoriteRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+    },
+    favoriteBadge: {
+      backgroundColor: colors.primary,
+      minWidth: 20,
+      height: 20,
+      borderRadius: 10,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: 6,
+    },
+    favoriteBadgeText: {
+      color: '#FFFFFF',
+      fontSize: 12,
+      fontWeight: '700',
     },
     logoutButton: {
       backgroundColor: colors.errorBackground,
@@ -229,6 +252,17 @@ function ProfileContent({ navigation }: Props) {
         <Text style={styles.cardTitle}>{t('profile.settings')}</Text>
         <TouchableOpacity accessibilityRole="button" style={styles.linkRow} onPress={() => navigation.navigate('Settings')}>
           <Text style={styles.linkText}>App settings</Text><Text style={styles.arrow}>→</Text>
+        </TouchableOpacity>
+        <TouchableOpacity accessibilityRole="button" style={styles.linkRow} onPress={() => navigation.navigate('Favorites')}>
+          <View style={styles.favoriteRow}>
+            <Text style={styles.linkText}>{t('profile.favorites')}</Text>
+            {favoriteCount > 0 && (
+              <View style={styles.favoriteBadge}>
+                <Text style={styles.favoriteBadgeText}>{favoriteCount}</Text>
+              </View>
+            )}
+          </View>
+          <Text style={styles.arrow}>→</Text>
         </TouchableOpacity>
         <View style={styles.themeRow}>
           <Text style={styles.rowLabel}>{t('profile.theme')}</Text>

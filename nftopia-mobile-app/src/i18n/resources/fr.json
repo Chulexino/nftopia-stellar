@@ -130,7 +130,8 @@
     "signOut": "Se déconnecter",
     "signOutConfirm": "Êtes-vous sûr de vouloir vous déconnecter ?",
     "signOutCancel": "Annuler",
-    "signOutConfirmButton": "Se déconnecter"
+    "signOutConfirmButton": "Se déconnecter",
+    "favorites": "Favorites"
   },
   "wallet": {
     "title": "Portefeuille",
@@ -299,5 +300,22 @@
     "long": "DD MMMM YYYY",
     "time": "HH:mm",
     "datetime": "DD MMMM YYYY HH:mm"
+  },
+  "favorites": {
+    "title": "Favoris",
+    "nfts": "NFTs",
+    "collections": "Collections",
+    "removeTitle": "Retirer le favori",
+    "removeMessage": "Retirer ce NFT de vos favoris ?",
+    "removeConfirm": "Retirer",
+    "removeCollectionTitle": "Retirer le favori",
+    "removeCollectionMessage": "Retirer cette collection de vos favoris ?",
+    "emptyNftsTitle": "Aucun NFT favori",
+    "emptyNftsMessage": "Touchez le cœur sur un NFT pour l'enregistrer ici.",
+    "browseNfts": "Parcourir les NFTs",
+    "emptyCollectionsTitle": "Aucune collection favorite",
+    "emptyCollectionsMessage": "Touchez le cœur sur une collection pour l'enregistrer ici.",
+    "browseCollections": "Parcourir les collections",
+    "nftCountLabel": "NFTs"
   }
 }
