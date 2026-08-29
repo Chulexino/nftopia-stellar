@@ -4,6 +4,17 @@ import { canPrompt, dismissRatingPrompt, requestRatingPrompt, resetRatingPrompt,
 
 const storage = new Map<string, string>();
 
+jest.mock('posthog-react-native', () => ({
+  PostHog: jest.fn().mockImplementation(() => ({
+    capture: jest.fn(),
+    debug: jest.fn(),
+    flush: jest.fn(async () => undefined),
+    identify: jest.fn(),
+    register: jest.fn(),
+    reset: jest.fn(),
+  })),
+}));
+
 jest.mock('@react-native-async-storage/async-storage', () => ({
   __esModule: true,
   default: {
