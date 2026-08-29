@@ -27,9 +27,12 @@ import NotificationsScreen from '@/screens/Notifications/NotificationsScreen';
 import NotificationSettingsScreen from '@/screens/Notifications/NotificationSettingsScreen';
 import SettingsScreen from '@/screens/Settings/SettingsScreen';
 
+// Backup Reminder Screen
+import BackupReminderScreen from '@/screens/BackupReminder/BackupReminderScreen';
+
 export type MainStackParamList = {
   Home: undefined;
-  WalletManagement: undefined;
+  WalletManagement: { autoExport?: boolean } | undefined;
   Profile: undefined;
   CreatorDashboard: undefined;
   MyNFTs: undefined;
@@ -43,6 +46,7 @@ export type MainStackParamList = {
   NotificationSettings: undefined;
   Settings: undefined;
   Marketplace: { category?: string } | undefined;
+  BackupReminder: undefined;
 };
 
 const Stack = createNativeStackNavigator<MainStackParamList>();

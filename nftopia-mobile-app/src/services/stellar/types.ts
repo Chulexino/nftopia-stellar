@@ -2,6 +2,7 @@ export interface Wallet {
   publicKey: string;
   secretKey: string;
   mnemonic?: string;
+  backupConfirmed?: boolean;
 }
 
 export interface WalletCreateResult {

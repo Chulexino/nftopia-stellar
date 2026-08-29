@@ -44,7 +44,10 @@ export default function WalletList({
           <Text style={styles.walletLabel} numberOfLines={1}>
             {item.publicKey.slice(0, 12)}...{item.publicKey.slice(-8)}
           </Text>
-          {isActive && <View style={styles.activeBadge}><Text style={styles.activeBadgeText}>Active</Text></View>}
+          <View style={styles.badgeContainer}>
+            {isActive && <View style={styles.activeBadge}><Text style={styles.activeBadgeText}>Active</Text></View>}
+            {!item.backupConfirmed && <View style={styles.warningBadge}><Text style={styles.warningBadgeText}>At Risk</Text></View>}
+          </View>
         </View>
         <View style={styles.walletActions}>
           <TouchableOpacity
@@ -129,6 +132,10 @@ const styles = StyleSheet.create({
     fontFamily: 'monospace',
     color: colors.text,
   },
+  badgeContainer: {
+    flexDirection: 'row',
+    gap: spacing.xs,
+  },
   activeBadge: {
     backgroundColor: colors.success,
     borderRadius: borderRadius.sm,
@@ -139,6 +146,19 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '700',
     color: colors.textInverse,
+  },
+  warningBadge: {
+    backgroundColor: colors.warningBackground,
+    borderRadius: borderRadius.sm,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 2,
+    borderWidth: 1,
+    borderColor: colors.warning,
+  },
+  warningBadgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: colors.warningText,
   },
   walletActions: {
     flexDirection: 'row',
