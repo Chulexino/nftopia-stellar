@@ -37,5 +37,8 @@ export async function dismissRatingPrompt(): Promise<void> {
 }
 
 export async function resetRatingPrompt(): Promise<void> {
-  await AsyncStorage.multiRemove([LAST_PROMPT_KEY, DISMISSED_KEY]);
+  await Promise.all([
+    AsyncStorage.removeItem(LAST_PROMPT_KEY),
+    AsyncStorage.removeItem(DISMISSED_KEY),
+  ]);
 }
