@@ -241,7 +241,7 @@ function HomeContent() {
             <Text style={styles.actionIcon}>🛍️</Text>
             <Text style={styles.actionLabel}>{t('home.actions.marketplace')}</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.actionCard}>
+          <TouchableOpacity style={styles.actionCard} onPress={() => navigation.navigate('Send')}>
             <Text style={styles.actionIcon}>📤</Text>
             <Text style={styles.actionLabel}>{t('home.actions.send')}</Text>
           </TouchableOpacity>
