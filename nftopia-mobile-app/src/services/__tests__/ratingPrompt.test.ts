@@ -2,6 +2,21 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as StoreReview from 'expo-store-review';
 import { canPrompt, dismissRatingPrompt, requestRatingPrompt, resetRatingPrompt, RATING_COOLDOWN_MS } from '../ratingPrompt';
 
+const storage = new Map<string, string>();
+
+jest.mock('@react-native-async-storage/async-storage', () => ({
+  __esModule: true,
+  default: {
+    getItem: jest.fn(async (key: string) => storage.get(key) ?? null),
+    setItem: jest.fn(async (key: string, value: string) => {
+      storage.set(key, value);
+    }),
+    removeItem: jest.fn(async (key: string) => {
+      storage.delete(key);
+    }),
+  },
+}));
+
 jest.mock('expo-store-review', () => ({
   isAvailableAsync: jest.fn(),
   requestReview: jest.fn(),
