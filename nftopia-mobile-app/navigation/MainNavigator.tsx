@@ -25,10 +25,15 @@ import EarningsScreen from '@/screens/Creator/EarningsScreen';
 // Notification Screens
 import NotificationsScreen from '@/screens/Notifications/NotificationsScreen';
 import NotificationSettingsScreen from '@/screens/Notifications/NotificationSettingsScreen';
+import SettingsScreen from '@/screens/Settings/SettingsScreen';
+import { SendScreen } from '@/screens/Wallet/SendScreen';
+
+// Backup Reminder Screen
+import BackupReminderScreen from '@/screens/BackupReminder/BackupReminderScreen';
 
 export type MainStackParamList = {
   Home: undefined;
-  WalletManagement: undefined;
+  WalletManagement: { autoExport?: boolean } | undefined;
   Profile: undefined;
   CreatorDashboard: undefined;
   MyNFTs: undefined;
@@ -40,7 +45,10 @@ export type MainStackParamList = {
   Transactions: undefined;
   Notifications: undefined;
   NotificationSettings: undefined;
-  Marketplace: undefined;
+  Settings: undefined;
+  Send: { prefilledAddress?: string } | undefined;
+  Marketplace: { category?: string } | undefined;
+  BackupReminder: undefined;
 };
 
 const Stack = createNativeStackNavigator<MainStackParamList>();
@@ -119,6 +127,8 @@ export default function MainNavigator() {
             </ScreenErrorBoundary>
           )}
         </Stack.Screen>
+
+        <Stack.Screen name="Send" component={SendScreen} />
         
         {/* Marketplace with detail transition */}
         <Stack.Screen 
@@ -224,6 +234,10 @@ export default function MainNavigator() {
               <NotificationSettingsScreen />
             </ScreenErrorBoundary>
           )}
+        </Stack.Screen>
+
+        <Stack.Screen name="Settings" options={getTransitionConfig('modal')}>
+          {(props) => <ScreenErrorBoundary name="SettingsScreen"><SettingsScreen {...props} /></ScreenErrorBoundary>}
         </Stack.Screen>
       </Stack.Navigator>
     </View>

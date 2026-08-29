@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { MainStackParamList } from '@/navigation/MainNavigator';
@@ -11,7 +11,7 @@ import WalletExportModal from '@/components/wallet/WalletExportModal';
 
 type Props = NativeStackScreenProps<MainStackParamList, 'WalletManagement'>;
 
-export default function WalletManagementScreen({ navigation }: Props) {
+export default function WalletManagementScreen({ navigation, route }: Props) {
   const {
     wallets,
     activePublicKey,
@@ -24,6 +24,15 @@ export default function WalletManagementScreen({ navigation }: Props) {
   const { requireBiometric, isAvailable } = useBiometric();
 
   const [exportingKey, setExportingKey] = useState<string | null>(null);
+
+  // Handle auto-export when coming from backup reminder
+  useEffect(() => {
+    if (route.params?.autoExport && activePublicKey) {
+      setExportingKey(activePublicKey);
+      // Clear the param so it doesn't trigger again
+      navigation.setParams({ autoExport: undefined });
+    }
+  }, [route.params?.autoExport, activePublicKey, navigation]);
   const [showBiometricPrompt, setShowBiometricPrompt] = useState(false);
   const [pendingAction, setPendingAction] = useState<{
     action: 'export' | 'reveal' | 'remove';

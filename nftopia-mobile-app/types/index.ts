@@ -127,9 +127,41 @@ export interface Transaction {
 // Notification Types
 // ============================================================
 
+/**
+ * Shared taxonomy of notification categories the backend/push service can
+ * emit. This is the single source of truth for category identifiers — the
+ * notification list, the preferences store, and the settings screen all key
+ * off these same string values instead of re-declaring the list separately.
+ *
+ * A string-literal union (not a `enum`) so every existing place that already
+ * constructs a notification with a raw string like `type: 'outbid'` keeps
+ * compiling unchanged — this is purely additive, it does not rename or
+ * re-type anything that already worked.
+ */
+export type NotificationCategory =
+  | 'outbid'
+  | 'sale'
+  | 'follow'
+  | 'mint'
+  | 'auction_end'
+  | 'listing'
+  | 'offer'
+  | 'transfer';
+
+export const NOTIFICATION_CATEGORIES: NotificationCategory[] = [
+  'outbid',
+  'sale',
+  'follow',
+  'mint',
+  'auction_end',
+  'listing',
+  'offer',
+  'transfer',
+];
+
 export interface Notification {
   id: string;
-  type: 'outbid' | 'sale' | 'follow' | 'mint' | 'auction_end' | 'listing' | 'offer' | 'transfer';
+  type: NotificationCategory;
   title: string;
   message: string;
   data?: {
@@ -145,6 +177,71 @@ export interface Notification {
   createdAt: string;
 }
 
+/**
+ * Display metadata for each notification category, grouped the same way the
+ * settings screen sections its toggles. This is the one place a category's
+ * label/description/section lives — add a category here and it shows up in
+ * the settings screen automatically.
+ */
+export const NOTIFICATION_CATEGORY_META: Record<
+  NotificationCategory,
+  { label: string; description: string; section: 'Marketplace' | 'Social' | 'Creation' }
+> = {
+  outbid: {
+    label: 'Outbid',
+    description: 'When someone outbids you on an NFT',
+    section: 'Marketplace',
+  },
+  sale: {
+    label: 'Sale',
+    description: 'When one of your NFTs is sold',
+    section: 'Marketplace',
+  },
+  listing: {
+    label: 'Listing',
+    description: "When an NFT you're watching is listed",
+    section: 'Marketplace',
+  },
+  offer: {
+    label: 'Offer',
+    description: 'When you receive an offer on an NFT',
+    section: 'Marketplace',
+  },
+  auction_end: {
+    label: 'Auction Ending',
+    description: "When an auction you're in is about to end",
+    section: 'Marketplace',
+  },
+  follow: {
+    label: 'Follows',
+    description: 'When someone follows you',
+    section: 'Social',
+  },
+  mint: {
+    label: 'Minting',
+    description: 'When your NFT is successfully minted',
+    section: 'Creation',
+  },
+  transfer: {
+    label: 'Transfers',
+    description: 'When an NFT is transferred to or from you',
+    section: 'Creation',
+  },
+};
+
+/**
+ * A do-not-disturb window. `start`/`end` are 24-hour "HH:mm" clock times in
+ * the device's local timezone. The window may cross midnight (`start` later
+ * than `end`, e.g. "22:00"–"08:00") — see `isWithinQuietHours` for how that's
+ * resolved. Only the hour component is exposed in the UI today (minutes are
+ * always "00"); see NOTIFICATION-PREFERENCES-SYNC.md for why.
+ */
+export interface QuietHours {
+  enabled: boolean;
+  start: string;
+  end: string;
+}
+
 export interface NotificationPreferences {
   outbid: boolean;
   sale: boolean;
@@ -155,6 +252,7 @@ export interface NotificationPreferences {
   offer: boolean;
   transfer: boolean;
   pushEnabled: boolean;
+  quietHours: QuietHours;
 }
 
 // ============================================================

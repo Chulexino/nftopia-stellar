@@ -9,6 +9,7 @@ import { of } from 'rxjs';
 import { AiAgentController } from './ai-agent.controller';
 import { AiAgentService } from './ai-agent.service';
 import { AiUsageService } from './ai-usage.service';
+import { AiAgentHealthService } from './ai-agent-health.service';
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 import { AiChatRateLimitGuard } from '../../common/guards/ai-chat-rate-limit.guard';
 
@@ -22,9 +23,14 @@ describe('AiAgentController', () => {
     getUsageSummary: jest.fn(),
   };
 
+  const aiAgentHealthService = {
+    getHealth: jest.fn(),
+  };
+
   const controller = new AiAgentController(
     aiAgentService as unknown as AiAgentService,
     aiUsageService as unknown as AiUsageService,
+    aiAgentHealthService as unknown as AiAgentHealthService,
   );
 
   const makeRequest = (userId?: string) =>
@@ -34,25 +40,46 @@ describe('AiAgentController', () => {
 
   afterEach(() => jest.clearAllMocks());
 
-  it('applies JwtAuthGuard at the controller level', () => {
+  it('applies no class-level guard (health must stay reachable without a JWT)', () => {
     const guards = Reflect.getMetadata(GUARDS_METADATA, AiAgentController) as
+      | unknown[]
+      | undefined;
+
+    expect(guards).toBeUndefined();
+  });
+
+  it('applies JwtAuthGuard and AiChatRateLimitGuard to the chat route', () => {
+    const guards = Reflect.getMetadata(GUARDS_METADATA, controller.chat) as
+      | unknown[]
+      | undefined;
+
+    expect(guards).toContain(JwtAuthGuard);
+    expect(guards).toContain(AiChatRateLimitGuard);
+  });
+
+  it('applies JwtAuthGuard to the usage route', () => {
+    const guards = Reflect.getMetadata(GUARDS_METADATA, controller.getUsage) as
       | unknown[]
       | undefined;
 
     expect(guards).toContain(JwtAuthGuard);
   });
 
-  it('applies AiChatRateLimitGuard to the chat route', () => {
-    const guards = Reflect.getMetadata(GUARDS_METADATA, controller.chat) as
-      | unknown[]
-      | undefined;
+  it('applies no guard to the health route', () => {
+    const guards = Reflect.getMetadata(
+      GUARDS_METADATA,
+      controller.getHealth,
+    ) as unknown[] | undefined;
 
-    expect(guards).toContain(AiChatRateLimitGuard);
+    expect(guards).toBeUndefined();
   });
 
   describe('chat', () => {
-    it('delegates to AiAgentService.chat with the authenticated user id and returns the reply', async () => {
-      aiAgentService.chat.mockResolvedValue('Here are the top listings.');
+    it('delegates to AiAgentService.chat with the authenticated user id and returns the reply + sessionId', async () => {
+      aiAgentService.chat.mockResolvedValue({
+        reply: 'Here are the top listings.',
+        sessionId: 'session-1',
+      });
 
       const result = await controller.chat(makeRequest('user-1'), {
         message: 'What NFTs are trending?',
@@ -60,14 +87,40 @@ describe('AiAgentController', () => {
 
       expect(aiAgentService.chat).toHaveBeenCalledWith(
         'user-1',
+        'marketplace-assistant',
         'What NFTs are trending?',
         undefined,
       );
-      expect(result).toEqual({ reply: 'Here are the top listings.' });
+      expect(result).toEqual({
+        reply: 'Here are the top listings.',
+        sessionId: 'session-1',
+      });
     });
 
-    it('forwards conversation history to AiAgentService.chat', async () => {
-      aiAgentService.chat.mockResolvedValue('Sure, here is more detail.');
+    it('forwards sessionId to AiAgentService.chat to continue an existing conversation', async () => {
+      aiAgentService.chat.mockResolvedValue({
+        reply: 'Sure, here is more detail.',
+        sessionId: 'session-42',
+      });
+
+      await controller.chat(makeRequest('user-1'), {
+        message: 'Tell me more',
+        sessionId: 'session-42',
+      });
+
+      expect(aiAgentService.chat).toHaveBeenCalledWith(
+        'user-1',
+        'marketplace-assistant',
+        'Tell me more',
+        'session-42',
+      );
+    });
+
+    it('ignores a client-supplied history array (deprecated — server loads history from the session)', async () => {
+      aiAgentService.chat.mockResolvedValue({
+        reply: 'Sure, here is more detail.',
+        sessionId: 'session-1',
+      });
       const history = [
         { role: 'user' as const, content: 'Hi' },
         { role: 'assistant' as const, content: 'Hello, how can I help?' },
@@ -80,8 +133,9 @@ describe('AiAgentController', () => {
 
       expect(aiAgentService.chat).toHaveBeenCalledWith(
         'user-1',
+        'marketplace-assistant',
         'Tell me more',
-        history,
+        undefined,
       );
     });
 
@@ -106,12 +160,13 @@ describe('AiAgentController', () => {
       );
     });
 
-    it('applies AiChatRateLimitGuard to the stream route', () => {
+    it('applies JwtAuthGuard and AiChatRateLimitGuard to the stream route', () => {
       const guards = Reflect.getMetadata(
         GUARDS_METADATA,
         controller.chatStream,
       ) as unknown[] | undefined;
 
+      expect(guards).toContain(JwtAuthGuard);
       expect(guards).toContain(AiChatRateLimitGuard);
     });
 
@@ -125,13 +180,30 @@ describe('AiAgentController', () => {
 
       expect(aiAgentService.chatStream).toHaveBeenCalledWith(
         'user-1',
+        'marketplace-assistant',
         'What NFTs are trending?',
         undefined,
       );
       expect(result).toBe(observable);
     });
 
-    it('forwards conversation history to AiAgentService.chatStream', () => {
+    it('forwards sessionId to AiAgentService.chatStream to continue an existing conversation', () => {
+      aiAgentService.chatStream.mockReturnValue(of());
+
+      controller.chatStream(makeRequest('user-1'), {
+        message: 'Tell me more',
+        sessionId: 'session-42',
+      });
+
+      expect(aiAgentService.chatStream).toHaveBeenCalledWith(
+        'user-1',
+        'marketplace-assistant',
+        'Tell me more',
+        'session-42',
+      );
+    });
+
+    it('ignores a client-supplied history array (deprecated — server loads history from the session)', () => {
       aiAgentService.chatStream.mockReturnValue(of());
       const history = [{ role: 'user' as const, content: 'Hi' }];
 
@@ -142,8 +214,9 @@ describe('AiAgentController', () => {
 
       expect(aiAgentService.chatStream).toHaveBeenCalledWith(
         'user-1',
+        'marketplace-assistant',
         'Tell me more',
-        history,
+        undefined,
       );
     });
 
@@ -184,6 +257,36 @@ describe('AiAgentController', () => {
         controller.getUsage(makeRequest(undefined)),
       ).rejects.toBeInstanceOf(UnauthorizedException);
       expect(aiUsageService.getUsageSummary).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('health', () => {
+    it('delegates to AiAgentHealthService.getHealth', async () => {
+      aiAgentHealthService.getHealth.mockResolvedValue({
+        status: 'up',
+        timestamp: '2026-08-27T00:00:00.000Z',
+      });
+
+      const result = await controller.getHealth();
+
+      expect(aiAgentHealthService.getHealth).toHaveBeenCalledWith();
+      expect(result).toEqual({
+        status: 'up',
+        timestamp: '2026-08-27T00:00:00.000Z',
+      });
+    });
+
+    it('does not require an authenticated user (no user on the request at all)', async () => {
+      aiAgentHealthService.getHealth.mockResolvedValue({
+        status: 'unconfigured',
+        timestamp: '2026-08-27T00:00:00.000Z',
+      });
+
+      // getHealth() takes no request/user argument, unlike every other route.
+      await expect(controller.getHealth()).resolves.toEqual({
+        status: 'unconfigured',
+        timestamp: '2026-08-27T00:00:00.000Z',
+      });
     });
   });
 });
