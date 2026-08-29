@@ -21,6 +21,7 @@
     }
   },
   "moduleNameMapper": {
+    "^@react-native-async-storage/async-storage$": "<rootDir>/src/test-mocks/async-storage.ts",
     "^expo-secure-store$": "<rootDir>/src/services/auth/__mocks__/expo-secure-store.ts",
     "^@/components/(.*)$": "<rootDir>/components/$1",
     "^@/screens/(.*)$": "<rootDir>/screens/$1",
