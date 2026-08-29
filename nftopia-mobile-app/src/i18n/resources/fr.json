@@ -79,7 +79,35 @@
     "testnet": "Testnet",
     "mainnet": "Mainnet",
     "noWallet": "Aucun Portefeuille Actif",
-    "noWalletSubtitle": "Importez ou créez un portefeuille pour commencer"
+    "noWalletSubtitle": "Importez ou créez un portefeuille pour commencer",
+    "discovery": {
+      "categoriesTitle": "Parcourir les catégories",
+      "categories": {
+        "art": "Art",
+        "music": "Musique",
+        "gaming": "Jeux",
+        "photography": "Photographie",
+        "collectibles": "Objets de collection",
+        "sports": "Sport",
+        "virtualWorlds": "Mondes virtuels",
+        "utility": "Utilitaire"
+      },
+      "trending": {
+        "title": "Collections tendances",
+        "floorPrice": "Prix plancher : {{amount}} XLM",
+        "empty": "Aucune collection tendance pour le moment",
+        "error": "Impossible de charger les collections tendances"
+      },
+      "newDrops": {
+        "title": "Nouveautés",
+        "empty": "Aucune nouveauté pour le moment — revenez bientôt",
+        "error": "Impossible de charger les nouveautés"
+      }
+    },
+    "recentlyViewed": {
+      "title": "Vus récemment",
+      "clear": "Effacer"
+    }
   },
   "profile": {
     "title": "Profil",
@@ -136,7 +164,21 @@
   "marketplace": {
     "title": "Marché",
     "searchPlaceholder": "Rechercher des NFTs...",
-    "filters": "Filtres",
+    "filters": {
+      "trigger": "Filtres",
+      "title": "Filtres",
+      "category": "Catégorie",
+      "status": "Statut",
+      "statusAll": "Tous",
+      "statusActive": "Actif",
+      "statusSold": "Vendu",
+      "priceRange": "Fourchette de prix (XLM)",
+      "minPrice": "Min",
+      "maxPrice": "Max",
+      "apply": "Appliquer les filtres",
+      "clearAll": "Tout effacer",
+      "priceRangeInvalid": "Le prix minimum ne peut pas être supérieur au prix maximum"
+    },
     "sortBy": "Trier par",
     "newest": "Plus récents",
     "oldest": "Plus anciens",

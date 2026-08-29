@@ -227,6 +227,9 @@ function ProfileContent({ navigation }: Props) {
 
       <View style={styles.card}>
         <Text style={styles.cardTitle}>{t('profile.settings')}</Text>
+        <TouchableOpacity accessibilityRole="button" style={styles.linkRow} onPress={() => navigation.navigate('Settings')}>
+          <Text style={styles.linkText}>App settings</Text><Text style={styles.arrow}>→</Text>
+        </TouchableOpacity>
         <View style={styles.themeRow}>
           <Text style={styles.rowLabel}>{t('profile.theme')}</Text>
           <ThemeToggle variant="switch" showLabel={false} />

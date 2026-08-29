@@ -1,4 +1,4 @@
-import { Keypair, Horizon } from 'stellar-sdk';
+import { Asset, Horizon, Keypair, Memo, Networks, Operation, StrKey, TransactionBuilder } from 'stellar-sdk';
 import * as bip39 from 'bip39';
 import { Wallet, WalletCreateResult, WalletError, WalletErrorCode, Transaction, TransactionType, TransactionFilters, PaginatedTransactions } from './types';
 import {
@@ -17,10 +17,33 @@ export type { Wallet, WalletCreateResult, Transaction, TransactionFilters, Pagin
 export class StellarWalletService {
   private readonly storage: SecureStorage;
   private readonly server: Horizon.Server;
+  private readonly network: NetworkType;
 
   constructor(storage?: SecureStorage, network: NetworkType = 'testnet') {
     this.storage = storage ?? new SecureStorage();
+    this.network = network;
     this.server = createServer(network);
+  }
+
+  async sendPayment(secretKey: string, destination: string, amount: string, assetCode = 'XLM', assetIssuer?: string, memo?: string): Promise<{ hash: string }> {
+    assertValidSecretKey(secretKey);
+    if (!StrKey.isValidEd25519PublicKey(destination)) throw new WalletError('Invalid recipient address', WalletErrorCode.TRANSACTION_ERROR);
+    if (!/^\d+(?:\.\d{1,7})?$/.test(amount) || Number(amount) <= 0) throw new WalletError('Amount must be a positive decimal', WalletErrorCode.TRANSACTION_ERROR);
+    if (memo && Buffer.byteLength(memo, 'utf8') > 28) throw new WalletError('Memo must be 28 bytes or fewer', WalletErrorCode.TRANSACTION_ERROR);
+    try {
+      const source = Keypair.fromSecret(secretKey);
+      const account = await this.server.loadAccount(source.publicKey());
+      const asset = assetCode === 'XLM' ? Asset.native() : assetIssuer ? new Asset(assetCode, assetIssuer) : (() => { throw new Error('Asset issuer is required'); })();
+      const builder = new TransactionBuilder(account, { fee: String(await this.server.fetchBaseFee()), networkPassphrase: this.network === 'mainnet' ? Networks.PUBLIC : Networks.TESTNET }).addOperation(Operation.payment({ destination, asset, amount }));
+      if (memo) builder.addMemo(Memo.text(memo));
+      const transaction = builder.setTimeout(180).build();
+      transaction.sign(source);
+      const submitted = await this.server.submitTransaction(transaction);
+      return { hash: submitted.hash };
+    } catch (error) {
+      if (error instanceof WalletError) throw error;
+      throw new WalletError(`Failed to submit payment: ${(error as Error).message}`, WalletErrorCode.TRANSACTION_ERROR);
+    }
   }
 
   async createWallet(password?: string): Promise<WalletCreateResult> {
