@@ -221,15 +221,22 @@ export default function WalletManagementScreen({ navigation, route }: Props) {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+          hitSlop={{ top: 12, bottom: 12, left: 8, right: 8 }}
+        >
           <Text style={styles.backText}>← Back</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>Wallets</Text>
+        <Text style={styles.title} accessibilityRole="header">
+          Wallets
+        </Text>
         <View style={styles.headerSpacer} />
       </View>
 
       {wallets.length === 0 ? (
-        <View style={styles.empty}>
+        <View style={styles.empty} accessible accessibilityLabel="No wallets. Import or create a wallet to get started.">
           <Text style={styles.emptyTitle}>No Wallets</Text>
           <Text style={styles.emptySubtitle}>
             Import or create a wallet to get started
