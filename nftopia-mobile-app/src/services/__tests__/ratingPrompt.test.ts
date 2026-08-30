@@ -4,6 +4,15 @@ import { canPrompt, dismissRatingPrompt, requestRatingPrompt, resetRatingPrompt,
 
 const storage = new Map<string, string>();
 
+jest.mock('@/src/analytics/analytics.service', () => ({
+  analyticsService: {
+    track: jest.fn(),
+    identify: jest.fn(),
+    reset: jest.fn(),
+    captureException: jest.fn(),
+  },
+}));
+
 jest.mock('posthog-react-native', () => ({
   PostHog: jest.fn().mockImplementation(() => ({
     capture: jest.fn(),
