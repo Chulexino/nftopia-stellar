@@ -192,10 +192,14 @@ function ProfileContent({ navigation }: Props) {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>{t('profile.title')}</Text>
+      <Text style={styles.title} accessibilityRole="header">
+        {t('profile.title')}
+      </Text>
 
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>{t('profile.account')}</Text>
+        <Text style={styles.cardTitle} accessibilityRole="header">
+          {t('profile.account')}
+        </Text>
         <View style={styles.row}>
           <Text style={styles.rowLabel}>{t('profile.email')}</Text>
           <Text style={styles.rowValue}>{user?.email ?? t('common.noResults')}</Text>
@@ -203,7 +207,9 @@ function ProfileContent({ navigation }: Props) {
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>{t('profile.wallet')}</Text>
+        <Text style={styles.cardTitle} accessibilityRole="header">
+          {t('profile.wallet')}
+        </Text>
         {activeWallet ? (
           <View style={styles.row}>
             <Text style={styles.rowLabel}>{t('profile.activeWallet')}</Text>
@@ -217,18 +223,30 @@ function ProfileContent({ navigation }: Props) {
         <TouchableOpacity
           style={styles.linkRow}
           onPress={() => navigation.navigate('WalletManagement')}
+          accessibilityRole="button"
+          accessibilityLabel={t('profile.manageWallets', { count: wallets.length })}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
           <Text style={styles.linkText}>
             {t('profile.manageWallets', { count: wallets.length })}
           </Text>
-          <Text style={styles.arrow}>→</Text>
+          <Text style={styles.arrow} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">→</Text>
         </TouchableOpacity>
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>{t('profile.settings')}</Text>
-        <TouchableOpacity accessibilityRole="button" style={styles.linkRow} onPress={() => navigation.navigate('Settings')}>
-          <Text style={styles.linkText}>App settings</Text><Text style={styles.arrow}>→</Text>
+        <Text style={styles.cardTitle} accessibilityRole="header">
+          {t('profile.settings')}
+        </Text>
+        <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel="App settings"
+          style={styles.linkRow}
+          onPress={() => navigation.navigate('Settings')}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
+          <Text style={styles.linkText}>App settings</Text>
+          <Text style={styles.arrow} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">→</Text>
         </TouchableOpacity>
         <View style={styles.themeRow}>
           <Text style={styles.rowLabel}>{t('profile.theme')}</Text>
@@ -237,12 +255,18 @@ function ProfileContent({ navigation }: Props) {
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>Security</Text>
+        <Text style={styles.cardTitle} accessibilityRole="header">
+          Security
+        </Text>
         <View style={styles.row}>
           <Text style={styles.rowLabel}>App Lock</Text>
           <TouchableOpacity
             onPress={() => setAppLockEnabled(!appLockEnabled)}
             style={styles.switch}
+            accessibilityRole="switch"
+            accessibilityLabel="App lock"
+            accessibilityState={{ checked: appLockEnabled }}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
             <View style={[styles.switchTrack, appLockEnabled && styles.switchTrackActive]}>
               <View style={[styles.switchThumb, appLockEnabled && styles.switchThumbActive]} />
@@ -269,6 +293,10 @@ function ProfileContent({ navigation }: Props) {
                   lockTimeout === option.value && styles.timeoutOptionActive,
                 ]}
                 onPress={() => setLockTimeout(option.value)}
+                accessibilityRole="button"
+                accessibilityLabel={option.label}
+                accessibilityState={{ selected: lockTimeout === option.value }}
+                hitSlop={{ top: 6, bottom: 6, left: 4, right: 4 }}
               >
                 <Text
                   style={[
@@ -285,16 +313,25 @@ function ProfileContent({ navigation }: Props) {
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>{t('profile.language')}</Text>
+        <Text style={styles.cardTitle} accessibilityRole="header">
+          {t('profile.language')}
+        </Text>
         <LanguageSwitcher variant="full" />
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>{t('home.network')}</Text>
+        <Text style={styles.cardTitle} accessibilityRole="header">
+          {t('home.network')}
+        </Text>
         <NetworkSwitcher network={network} onSwitch={switchNetwork} />
       </View>
 
-      <TouchableOpacity style={styles.logoutButton} onPress={handleSignOut}>
+      <TouchableOpacity
+        style={styles.logoutButton}
+        onPress={handleSignOut}
+        accessibilityRole="button"
+        accessibilityLabel={t('profile.signOut')}
+      >
         <Text style={styles.logoutText}>{t('profile.signOut')}</Text>
       </TouchableOpacity>
     </ScrollView>
