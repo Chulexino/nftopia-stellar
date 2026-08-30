@@ -12,6 +12,8 @@ import { ThemeToggle } from '@/src/components/ThemeToggle';
 import { withErrorBoundary } from '@/src/hoc/withErrorBoundary';
 import { errorLogger } from '@/src/errors/logger';
 import { useTheme } from '@/src/theme/ThemeContext';
+import { requestRatingPrompt } from '@/src/services/ratingPrompt';
+import { useToast } from '@/src/hooks/useToast';
 import { useFavoritesStore } from '@/stores/favoritesStore';
 
 type Props = NativeStackScreenProps<MainStackParamList, 'Profile'>;
@@ -22,10 +24,22 @@ function ProfileContent({ navigation }: Props) {
   const { user, logout, appLockEnabled, setAppLockEnabled, lockTimeout, setLockTimeout } = useAuthStore();
   const { language } = useLanguageStore();
   const { colors, isDark } = useTheme();
+  const { showInfo, showError } = useToast();
   const [showLockTimeoutPicker, setShowLockTimeoutPicker] = useState(false);
   const favoriteCount = useFavoritesStore(
     (s) => s.favorites.length + s.favoriteCollections.length
   );
+
+  const handleRateApp = async () => {
+    try {
+      const result = await requestRatingPrompt();
+      if (result === 'unavailable') {
+        showInfo('Store reviews are not available on this device yet.');
+      }
+    } catch {
+      showError('Unable to open the store review prompt.');
+    }
+  };
 
   const handleSignOut = () => {
     Alert.alert(
@@ -286,6 +300,10 @@ function ProfileContent({ navigation }: Props) {
           <Text style={styles.rowLabel}>{t('profile.theme')}</Text>
           <ThemeToggle variant="switch" showLabel={false} />
         </View>
+        <TouchableOpacity style={styles.linkRow} onPress={handleRateApp}>
+          <Text style={styles.linkText}>Rate NFTopia</Text>
+          <Text style={styles.arrow}>→</Text>
+        </TouchableOpacity>
       </View>
 
       <View style={styles.card}>
