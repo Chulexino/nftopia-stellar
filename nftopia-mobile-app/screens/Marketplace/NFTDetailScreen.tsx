@@ -20,6 +20,7 @@ import { OptimizedImage } from '@/src/components/OptimizedImage';
 import { ImageGallery } from '@/src/components/ImageGallery';
 import { NFTDetailSkeleton } from '@/src/components/skeletons';
 import { useRecentlyViewedStore } from '@/stores/recentlyViewedStore';
+import { FavoriteButton } from '@/components/ui/FavoriteButton';
 
 type NFTDetailRouteProp = RouteProp<MainStackParamList, 'NFTDetail'>;
 type NavigationProp = NativeStackNavigationProp<MainStackParamList>;
@@ -87,6 +88,7 @@ export default function NFTDetailScreen() {
         <Text style={styles.headerTitle} numberOfLines={1}>
           {nft.name}
         </Text>
+        <FavoriteButton id={nft.id} kind="nft" size="md" testID="nft-detail-favorite" />
       </View>
       
       <ScrollView
