@@ -72,6 +72,9 @@ export default function AuthButton({
       onPressOut={handlePressOut}
       activeOpacity={1}
       disabled={isDisabled}
+      accessibilityRole="button"
+      accessibilityLabel={title}
+      accessibilityState={{ disabled: isDisabled, busy: loading }}
     >
       <Animated.View
         style={[

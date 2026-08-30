@@ -130,7 +130,8 @@
     "signOut": "Cerrar sesión",
     "signOutConfirm": "¿Estás seguro de que quieres cerrar sesión?",
     "signOutCancel": "Cancelar",
-    "signOutConfirmButton": "Cerrar sesión"
+    "signOutConfirmButton": "Cerrar sesión",
+    "favorites": "Favorites"
   },
   "wallet": {
     "title": "Cartera",
@@ -299,5 +300,22 @@
     "long": "DD de MMMM de YYYY",
     "time": "HH:mm",
     "datetime": "DD de MMMM de YYYY HH:mm"
+  },
+  "favorites": {
+    "title": "Favoritos",
+    "nfts": "NFTs",
+    "collections": "Colecciones",
+    "removeTitle": "Quitar favorito",
+    "removeMessage": "¿Quitar este NFT de tus favoritos?",
+    "removeConfirm": "Quitar",
+    "removeCollectionTitle": "Quitar favorito",
+    "removeCollectionMessage": "¿Quitar esta colección de tus favoritos?",
+    "emptyNftsTitle": "Aún no hay NFTs favoritos",
+    "emptyNftsMessage": "Toca el corazón de un NFT para guardarlo aquí.",
+    "browseNfts": "Explorar NFTs",
+    "emptyCollectionsTitle": "Aún no hay colecciones favoritas",
+    "emptyCollectionsMessage": "Toca el corazón de una colección para guardarla aquí.",
+    "browseCollections": "Explorar colecciones",
+    "nftCountLabel": "NFTs"
   }
 }

@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import apiClient from '@/lib/api/sample';
 import { useAuthStore } from '@/stores/authStore';
+import { FavoriteButton } from '@/components/ui/FavoriteButton';
 import { Collection, NFT } from '@/types';
 
 export default function CollectionDetailScreen({ route, navigation }: any) {
@@ -141,6 +142,9 @@ export default function CollectionDetailScreen({ route, navigation }: any) {
             {isLiked ? 'Liked' : 'Like'}
           </Text>
         </TouchableOpacity>
+        <View style={styles.favoriteWrap}>
+          <FavoriteButton id={collection.id} kind="collection" size="md" testID="collection-favorite" />
+        </View>
         {isOwner && (
           <>
             <TouchableOpacity style={styles.actionButton} onPress={() => navigation.navigate('EditCollection', { collectionId })}>
@@ -225,6 +229,7 @@ const styles = StyleSheet.create({
   actionIcon: { fontSize: 16, marginRight: 6 },
   actionText: { fontSize: 14, color: '#666', fontWeight: '500' },
   actionTextActive: { color: '#6C5CE7' },
+  favoriteWrap: { justifyContent: 'center' },
   section: { padding: 16 },
   sectionTitle: { fontSize: 18, fontWeight: '600', color: '#1A1A1A', marginBottom: 12 },
   description: { fontSize: 14, color: '#666', lineHeight: 20 },

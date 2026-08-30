@@ -14,6 +14,7 @@ import ProfileScreen from '@/screens/Profile/ProfileScreen';
 import WalletManagementScreen from '@/screens/Profile/WalletManagementScreen';
 import MarketplaceScreen from '@/screens/Marketplace/MarketplaceScreen';
 import NFTDetailScreen from '@/screens/Marketplace/NFTDetailScreen';
+import FavoritesScreen from '@/screens/Favorites/FavoritesScreen';
 
 // Creator Screens
 import CreatorDashboardScreen from '@/screens/Creator/CreatorDashboardScreen';
@@ -48,7 +49,8 @@ export type MainStackParamList = {
   Settings: undefined;
   Send: { prefilledAddress?: string } | undefined;
   Marketplace: { category?: string } | undefined;
-  BackupReminder: undefined;
+BackupReminder: undefined;
+  Favorites: undefined;
 };
 
 const Stack = createNativeStackNavigator<MainStackParamList>();
@@ -153,6 +155,18 @@ export default function MainNavigator() {
           {() => (
             <ScreenErrorBoundary name="NFTDetailScreen">
               <NFTDetailScreen />
+            </ScreenErrorBoundary>
+          )}
+        </Stack.Screen>
+
+        {/* Favorites / Wishlist with detail transition */}
+        <Stack.Screen 
+          name="Favorites"
+          options={getTransitionConfig('detail')}
+        >
+          {() => (
+            <ScreenErrorBoundary name="FavoritesScreen">
+              <FavoritesScreen />
             </ScreenErrorBoundary>
           )}
         </Stack.Screen>
