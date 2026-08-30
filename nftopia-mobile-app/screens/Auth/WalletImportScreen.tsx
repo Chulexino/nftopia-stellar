@@ -78,6 +78,7 @@ export default function WalletImportScreen({ navigation }: Props) {
           <TouchableOpacity
             style={[styles.tab, activeTab === 'secret' && styles.tabActive]}
             onPress={() => setActiveTab('secret')}
+            testID="wallet-import-secret-tab"
           >
             <Text style={[styles.tabText, activeTab === 'secret' && styles.tabTextActive]}>
               Secret Key
@@ -86,6 +87,7 @@ export default function WalletImportScreen({ navigation }: Props) {
           <TouchableOpacity
             style={[styles.tab, activeTab === 'mnemonic' && styles.tabActive]}
             onPress={() => setActiveTab('mnemonic')}
+            testID="wallet-import-mnemonic-tab"
           >
             <Text style={[styles.tabText, activeTab === 'mnemonic' && styles.tabTextActive]}>
               Recovery Phrase
@@ -134,6 +136,7 @@ export default function WalletImportScreen({ navigation }: Props) {
         <TouchableOpacity
           style={[styles.primaryButton, (isLoading) && styles.buttonDisabled]}
           onPress={handleImport}
+          testID="wallet-import-submit"
           disabled={isLoading}
         >
           <Text style={styles.primaryButtonText}>

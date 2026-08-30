@@ -21,6 +21,7 @@ interface AuthButtonProps {
   disabled?: boolean;
   loading?: boolean;
   haptic?: boolean;
+  testID?: string;
 }
 
 export default function AuthButton({
@@ -33,6 +34,7 @@ export default function AuthButton({
   disabled = false,
   loading = false,
   haptic = true,
+  testID,
 }: AuthButtonProps) {
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
@@ -72,6 +74,7 @@ export default function AuthButton({
       onPressOut={handlePressOut}
       activeOpacity={1}
       disabled={isDisabled}
+      testID={testID}
       accessibilityRole="button"
       accessibilityLabel={title}
       accessibilityState={{ disabled: isDisabled, busy: loading }}
