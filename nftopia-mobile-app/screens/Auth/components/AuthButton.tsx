@@ -75,6 +75,9 @@ export default function AuthButton({
       activeOpacity={1}
       disabled={isDisabled}
       testID={testID}
+      accessibilityRole="button"
+      accessibilityLabel={title}
+      accessibilityState={{ disabled: isDisabled, busy: loading }}
     >
       <Animated.View
         style={[

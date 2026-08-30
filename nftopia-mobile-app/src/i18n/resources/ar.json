@@ -130,7 +130,8 @@
     "signOut": "تسجيل الخروج",
     "signOutConfirm": "هل أنت متأكد من رغبتك في تسجيل الخروج؟",
     "signOutCancel": "إلغاء",
-    "signOutConfirmButton": "تسجيل الخروج"
+    "signOutConfirmButton": "تسجيل الخروج",
+    "favorites": "المفضلة"
   },
   "wallet": {
     "title": "المحفظة",
@@ -299,5 +300,22 @@
     "long": "DD MMMM YYYY",
     "time": "HH:mm",
     "datetime": "DD MMMM YYYY HH:mm"
+  },
+  "favorites": {
+    "title": "المفضلة",
+    "nfts": "الرموز",
+    "collections": "المجموعات",
+    "removeTitle": "إزالة المفضلة",
+    "removeMessage": "هل تريد إزالة هذا الرمز من المفضلة؟",
+    "removeConfirm": "إزالة",
+    "removeCollectionTitle": "إزالة المفضلة",
+    "removeCollectionMessage": "هل تريد إزالة هذه المجموعة من المفضلة؟",
+    "emptyNftsTitle": "لا توجد رموز مفضلة بعد",
+    "emptyNftsMessage": "اضغط على القلب في أي رمز لحفظه هنا.",
+    "browseNfts": "تصفح الرموز",
+    "emptyCollectionsTitle": "لا توجد مجموعات مفضلة بعد",
+    "emptyCollectionsMessage": "اضغط على القلب في أي مجموعة لحفظها هنا.",
+    "browseCollections": "تصفح المجموعات",
+    "nftCountLabel": "رموز"
   }
 }
