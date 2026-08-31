@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView, StatusBar, StyleSheet, Text, View, ActivityIndicator } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ApolloProvider, ApolloClient, NormalizedCacheObject } from '@apollo/client';
 import AppNavigator from './navigation/AppNavigator';
 import AppLayout from './app/_layout';
@@ -9,7 +10,9 @@ import { NetworkStatusManager } from './src/components/NetworkStatusManager';
 import { SessionManager } from './src/components/SessionManager';
 import { AppLockManager } from './src/components/AppLockManager';
 import { PrivacyOverlay } from './src/components/PrivacyOverlay';
+import { VersionCheckManager } from './src/components/VersionCheckManager';
 import { setupApollo } from './lib/api/apolloClient';
+import BackupReminderManager from './components/wallet/BackupReminderManager';
 
 export default function App() {
   const [client, setClient] = useState<ApolloClient<NormalizedCacheObject> | undefined>();
@@ -27,21 +30,25 @@ export default function App() {
   }
 
   return (
-    <ApolloProvider client={client}>
-      <AppLayout>
-        <PrivacyOverlay />
-        <AppLockManager>
-          <SafeAreaView style={styles.container}>
-            <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
-            <NetworkStatusManager />
-            <SessionManager />
-            <ConnectivityBanner />
-            <AppNavigator />
-            <ToastProvider />
-          </SafeAreaView>
-        </AppLockManager>
-      </AppLayout>
-    </ApolloProvider>
+    <SafeAreaProvider>
+      <ApolloProvider client={client}>
+        <AppLayout>
+          <PrivacyOverlay />
+          <AppLockManager>
+            <VersionCheckManager />
+            <SafeAreaView style={styles.container}>
+              <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+              <NetworkStatusManager />
+              <SessionManager />
+              <BackupReminderManager />
+              <ConnectivityBanner />
+              <AppNavigator />
+              <ToastProvider />
+            </SafeAreaView>
+          </AppLockManager>
+        </AppLayout>
+      </ApolloProvider>
+    </SafeAreaProvider>
   );
 }
 

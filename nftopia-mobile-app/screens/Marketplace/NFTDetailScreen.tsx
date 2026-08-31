@@ -19,6 +19,8 @@ import { useNFTDetail } from '@/hooks/useNFTDetail';
 import { OptimizedImage } from '@/src/components/OptimizedImage';
 import { ImageGallery } from '@/src/components/ImageGallery';
 import { NFTDetailSkeleton } from '@/src/components/skeletons';
+import { useRecentlyViewedStore } from '@/stores/recentlyViewedStore';
+import { FavoriteButton } from '@/components/ui/FavoriteButton';
 
 type NFTDetailRouteProp = RouteProp<MainStackParamList, 'NFTDetail'>;
 type NavigationProp = NativeStackNavigationProp<MainStackParamList>;
@@ -29,6 +31,13 @@ export default function NFTDetailScreen() {
   const { nftId } = route.params;
 
   const { nft, loading: isLoading, error, refetch } = useNFTDetail(nftId);
+  const trackView = useRecentlyViewedStore((s) => s.trackView);
+
+  useEffect(() => {
+    if (nft) {
+      trackView(nft.id);
+    }
+  }, [nft, trackView]);
 
   const copyToClipboard = async (text: string, type: string) => {
     await Clipboard.setStringAsync(text);
@@ -79,6 +88,7 @@ export default function NFTDetailScreen() {
         <Text style={styles.headerTitle} numberOfLines={1}>
           {nft.name}
         </Text>
+        <FavoriteButton id={nft.id} kind="nft" size="md" testID="nft-detail-favorite" />
       </View>
       
       <ScrollView

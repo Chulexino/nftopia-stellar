@@ -15,28 +15,34 @@ export const lightColors: ThemeColors = {
   // Text colors
   text: '#1a1a1a',
   textSecondary: '#666666',
-  textTertiary: '#999999',
+  // #707070 (was #999999): #999999 only reached 2.85:1 against white/surface,
+  // failing WCAG AA (4.5:1) for body text. #707070 clears 4.5:1 on both.
+  textTertiary: '#707070',
   textInverse: '#ffffff',
-  
+
   // Border colors
   border: '#e9ecef',
   borderFocused: '#007AFF',
   borderLight: '#f0f0f0',
-  
+
   // Status colors
-  error: '#FF3B30',
+  // #D63228 (was #FF3B30): the brighter red only reached 3.32:1 against
+  // errorBackground, failing WCAG AA (4.5:1) for error text/labels.
+  error: '#D63228',
   errorBackground: '#FFF5F5',
-  errorText: '#FF3B30',
-  
+  errorText: '#D63228',
+
   warning: '#FF9500',
   warningBackground: '#fff3cd',
   warningText: '#856404',
-  
+
   success: '#34C759',
   successBackground: '#E8F5E9',
   successText: '#2E7D32',
-  
-  info: '#007AFF',
+
+  // #0070EB (was #007AFF): the brighter blue only reached 4.02:1 against
+  // white, failing WCAG AA (4.5:1) for link text.
+  info: '#0070EB',
   infoBackground: '#e7f3ff',
   infoText: '#084298',
   
@@ -67,7 +73,9 @@ export const darkColors: ThemeColors = {
   // Text colors
   text: '#ffffff',
   textSecondary: '#b0b0b0',
-  textTertiary: '#808080',
+  // #8C8C8C (was #808080): #808080 only reached 4.22:1 against the surface
+  // color, failing WCAG AA (4.5:1) for body text.
+  textTertiary: '#8C8C8C',
   textInverse: '#000000',
   
   // Border colors
@@ -90,7 +98,9 @@ export const darkColors: ThemeColors = {
   
   info: '#0A84FF',
   infoBackground: '#1A2430',
-  infoText: '#0A84FF',
+  // #2B96FF (was #0A84FF): the darker blue only reached 4.30:1 against
+  // infoBackground, failing WCAG AA (4.5:1) for info text.
+  infoText: '#2B96FF',
   
   // Network colors
   testnet: '#FF9F0A',

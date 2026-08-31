@@ -79,7 +79,35 @@
     "testnet": "شبكة الاختبار",
     "mainnet": "الشبكة الرئيسية",
     "noWallet": "لا توجد محفظة نشطة",
-    "noWalletSubtitle": "استورد أو أنشئ محفظة للبدء"
+    "noWalletSubtitle": "استورد أو أنشئ محفظة للبدء",
+    "discovery": {
+      "categoriesTitle": "تصفح الفئات",
+      "categories": {
+        "art": "فن",
+        "music": "موسيقى",
+        "gaming": "ألعاب",
+        "photography": "تصوير",
+        "collectibles": "مقتنيات",
+        "sports": "رياضة",
+        "virtualWorlds": "عوالم افتراضية",
+        "utility": "أدوات"
+      },
+      "trending": {
+        "title": "المجموعات الرائجة",
+        "floorPrice": "السعر الأدنى: {{amount}} XLM",
+        "empty": "لا توجد مجموعات رائجة بعد",
+        "error": "تعذر تحميل المجموعات الرائجة"
+      },
+      "newDrops": {
+        "title": "الإصدارات الجديدة",
+        "empty": "لا توجد إصدارات جديدة بعد — تحقق مرة أخرى قريباً",
+        "error": "تعذر تحميل الإصدارات الجديدة"
+      }
+    },
+    "recentlyViewed": {
+      "title": "شوهد مؤخراً",
+      "clear": "مسح"
+    }
   },
   "profile": {
     "title": "الملف الشخصي",
@@ -102,7 +130,8 @@
     "signOut": "تسجيل الخروج",
     "signOutConfirm": "هل أنت متأكد من رغبتك في تسجيل الخروج؟",
     "signOutCancel": "إلغاء",
-    "signOutConfirmButton": "تسجيل الخروج"
+    "signOutConfirmButton": "تسجيل الخروج",
+    "favorites": "المفضلة"
   },
   "wallet": {
     "title": "المحفظة",
@@ -136,7 +165,21 @@
   "marketplace": {
     "title": "السوق",
     "searchPlaceholder": "بحث عن NFTs...",
-    "filters": "تصفية",
+    "filters": {
+      "trigger": "تصفية",
+      "title": "تصفية",
+      "category": "الفئة",
+      "status": "الحالة",
+      "statusAll": "الكل",
+      "statusActive": "نشط",
+      "statusSold": "مباع",
+      "priceRange": "نطاق السعر (XLM)",
+      "minPrice": "الحد الأدنى",
+      "maxPrice": "الحد الأقصى",
+      "apply": "تطبيق التصفية",
+      "clearAll": "مسح الكل",
+      "priceRangeInvalid": "لا يمكن أن يكون الحد الأدنى للسعر أكبر من الحد الأقصى"
+    },
     "sortBy": "ترتيب حسب",
     "newest": "الأحدث",
     "oldest": "الأقدم",
@@ -257,5 +300,22 @@
     "long": "DD MMMM YYYY",
     "time": "HH:mm",
     "datetime": "DD MMMM YYYY HH:mm"
+  },
+  "favorites": {
+    "title": "المفضلة",
+    "nfts": "الرموز",
+    "collections": "المجموعات",
+    "removeTitle": "إزالة المفضلة",
+    "removeMessage": "هل تريد إزالة هذا الرمز من المفضلة؟",
+    "removeConfirm": "إزالة",
+    "removeCollectionTitle": "إزالة المفضلة",
+    "removeCollectionMessage": "هل تريد إزالة هذه المجموعة من المفضلة؟",
+    "emptyNftsTitle": "لا توجد رموز مفضلة بعد",
+    "emptyNftsMessage": "اضغط على القلب في أي رمز لحفظه هنا.",
+    "browseNfts": "تصفح الرموز",
+    "emptyCollectionsTitle": "لا توجد مجموعات مفضلة بعد",
+    "emptyCollectionsMessage": "اضغط على القلب في أي مجموعة لحفظها هنا.",
+    "browseCollections": "تصفح المجموعات",
+    "nftCountLabel": "رموز"
   }
 }

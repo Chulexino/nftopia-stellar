@@ -30,6 +30,18 @@ class ApiClient {
     this.token = token;
   }
 
+  async submitModerationReport(payload: {
+    targetType: 'nft' | 'collection' | 'profile';
+    targetId: string;
+    reason: string;
+    details?: string;
+  }): Promise<void> {
+    await this.request('/moderation/reports', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
   private async request<T>(
     endpoint: string,
     options: RequestInit = {}

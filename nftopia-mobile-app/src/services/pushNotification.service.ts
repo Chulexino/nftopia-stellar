@@ -6,15 +6,36 @@ import { analyticsService } from '@/src/analytics/analytics.service';
 import { errorLogger } from '@/src/errors/logger';
 import apiClient from '@/lib/api/sample';
 import { Notification } from '@/types';
+import { isWithinQuietHours } from '@/src/utils/notificationSchedule';
+// Imported lazily inside the handler (not at module scope) to avoid a
+// module-init-order footgun: notificationStore imports this service, so a
+// top-level import back here would be a real circular dependency. Reading it
+// inside the callback is safe because by the time a notification actually
+// arrives, both modules have long since finished loading.
+import { useNotificationStore } from '@/stores/notificationStore';
 
-// Configure notification handler
+// Configure notification handler.
+//
+// Quiet hours are enforced here, not by asking the OS to hold the
+// notification: Expo/OS push delivery has no concept of the user's in-app
+// quiet-hours preference, so the payload always arrives. What this handler
+// controls is only whether the *already-delivered* notification is
+// presented to the user while the app is foregrounded. The badge count is
+// still updated during quiet hours (so unread state stays accurate); only
+// the visible banner/list entry and sound are suppressed. Background/killed
+// delivery presentation is controlled by the OS, not this handler, and is a
+// documented limitation — see NOTIFICATION-PREFERENCES-SYNC.md.
 Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowBanner: true,
-    shouldShowList: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-  }),
+  handleNotification: async () => {
+    const { quietHours } = useNotificationStore.getState().preferences;
+    const muted = isWithinQuietHours(quietHours);
+    return {
+      shouldShowBanner: !muted,
+      shouldShowList: !muted,
+      shouldPlaySound: !muted,
+      shouldSetBadge: true,
+    };
+  },
 });
 
 export interface PushNotificationData {
@@ -472,6 +493,21 @@ class PushNotificationService {
     } catch (error) {
       errorLogger.log(error as Error, 'getScheduledNotifications');
       return [];
+    }
+  }
+
+  // Get the OS-level notification permission status, so a settings UI can
+  // reconcile it against the user's in-app toggle (e.g. show a banner when
+  // the OS has denied permission but preferences.pushEnabled is still true).
+  // Does not prompt — use `initialize()` for that. Simulators report
+  // 'undetermined' since Device.isDevice is false there.
+  async getPermissionStatus(): Promise<Notifications.PermissionStatus> {
+    try {
+      const { status } = await Notifications.getPermissionsAsync();
+      return status;
+    } catch (error) {
+      errorLogger.log(error as Error, 'getPermissionStatus');
+      return Notifications.PermissionStatus.UNDETERMINED;
     }
   }
 

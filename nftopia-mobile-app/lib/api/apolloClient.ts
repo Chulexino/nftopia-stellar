@@ -11,7 +11,24 @@ export const cache = new InMemoryCache({
           merge(existing, incoming) {
             if (!existing) return incoming;
             if (!incoming) return existing;
-            
+
+            return {
+              ...incoming,
+              edges: [...(existing.edges || []), ...(incoming.edges || [])],
+            };
+          },
+        },
+        // Distinct search/category/sortBy combinations get their own cache
+        // bucket (keyed on `filter`); pagination fetches within a bucket
+        // append, while a fresh fetch (no `after` cursor) replaces it so
+        // changing filters or pulling to refresh doesn't leave stale edges.
+        listings: {
+          keyArgs: ['filter'],
+          merge(existing, incoming, { args }) {
+            if (!args?.pagination?.after) return incoming;
+            if (!existing) return incoming;
+            if (!incoming) return existing;
+
             return {
               ...incoming,
               edges: [...(existing.edges || []), ...(incoming.edges || [])],

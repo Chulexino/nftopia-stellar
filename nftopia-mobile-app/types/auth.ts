@@ -1,13 +1,16 @@
+import { Wallet } from '../src/services/stellar/types';
+
 export interface User {
   id: string;
   email?: string;
+  username?: string;
   walletAddress?: string;
   walletType?: 'argentx' | 'braavos' | 'stellar';
   isCreator?: boolean;
-  createdAt: Date;
+  createdAt?: Date;
 }
 
-export type AuthNavigatorScreen = 
+export type AuthNavigatorScreen =
   | 'Onboarding'
   | 'WalletSelection'
   | 'WalletCreate'
@@ -18,6 +21,7 @@ export type AuthNavigatorScreen =
 export interface AuthStore {
   // State
   user: User | null;
+  wallet: Wallet | null;
   loading: boolean;
   isAuthenticated: boolean;
   isCreator: boolean;
@@ -27,16 +31,18 @@ export interface AuthStore {
 
   // Actions - State Management
   setUser: (user: User | null) => void;
+  setWallet: (wallet: Wallet | null) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   clearError: () => void;
   setIsCheckingAuth: (isChecking: boolean) => void;
   setIsCreator: (isCreator: boolean) => void;
-  
+
   // Actions - Authentication
   initializeAuth: () => Promise<void>;
+  loginWithWallet: (wallet: Wallet) => Promise<void>;
   logout: () => Promise<void>;
-  
+
   // Navigation actions
   navigateToScreen: (screen: AuthNavigatorScreen) => void;
   goBack: () => void;
