@@ -180,10 +180,17 @@ function HomeContent() {
       >
         <View style={styles.header}>
           <View>
-            <Text style={styles.greeting}>{t('home.greeting', { name: greetingName })}</Text>
+            <Text style={styles.greeting} accessibilityRole="header">
+              {t('home.greeting', { name: greetingName })}
+            </Text>
             <Text style={styles.subGreeting}>{t('home.title')}</Text>
           </View>
-          <View style={styles.networkBadge}>
+          <View
+            style={styles.networkBadge}
+            accessible
+            accessibilityRole="text"
+            accessibilityLabel={`Network: ${network === 'testnet' ? t('home.testnet') : t('home.mainnet')}`}
+          >
             <Text style={styles.networkBadgeText}>
               {network === 'testnet' ? t('home.testnet') : t('home.mainnet')}
             </Text>
@@ -200,7 +207,9 @@ function HomeContent() {
         />
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t('home.discovery.categoriesTitle')}</Text>
+          <Text style={styles.sectionTitle} accessibilityRole="header">
+            {t('home.discovery.categoriesTitle')}
+          </Text>
           <CategorySelector
             onSelectCategory={handleSelectCategory}
             testID="home-category-selector"
@@ -208,7 +217,9 @@ function HomeContent() {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t('home.discovery.trending.title')}</Text>
+          <Text style={styles.sectionTitle} accessibilityRole="header">
+            {t('home.discovery.trending.title')}
+          </Text>
           <TrendingCarousel
             data={trendingCollections}
             loading={trendingLoading}
@@ -220,7 +231,9 @@ function HomeContent() {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t('home.discovery.newDrops.title')}</Text>
+          <Text style={styles.sectionTitle} accessibilityRole="header">
+            {t('home.discovery.newDrops.title')}
+          </Text>
           <NewDropsSection
             data={newDrops}
             loading={newDropsLoading}
@@ -234,23 +247,40 @@ function HomeContent() {
         <RecentlyViewedRow testID="home-recently-viewed" />
 
         <View style={styles.actions}>
-          <TouchableOpacity 
-            style={styles.actionCard} 
+          <TouchableOpacity
+            style={styles.actionCard}
             onPress={() => navigation.navigate('Marketplace')}
+            accessibilityRole="button"
+            accessibilityLabel={t('home.actions.marketplace')}
           >
-            <Text style={styles.actionIcon}>🛍️</Text>
+            <Text style={styles.actionIcon} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">🛍️</Text>
             <Text style={styles.actionLabel}>{t('home.actions.marketplace')}</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.actionCard}>
-            <Text style={styles.actionIcon}>📤</Text>
+          <TouchableOpacity
+            style={styles.actionCard}
+            onPress={() => navigation.navigate('Send')}
+            accessibilityRole="button"
+            accessibilityLabel={t('home.actions.send')}
+          >
+            <Text style={styles.actionIcon} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">📤</Text>
             <Text style={styles.actionLabel}>{t('home.actions.send')}</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.actionCard}>
-            <Text style={styles.actionIcon}>📥</Text>
+          <TouchableOpacity
+            style={styles.actionCard}
+            accessibilityRole="button"
+            accessibilityLabel={t('home.actions.receive')}
+            accessibilityHint="Coming soon"
+          >
+            <Text style={styles.actionIcon} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">📥</Text>
             <Text style={styles.actionLabel}>{t('home.actions.receive')}</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.actionCard}>
-            <Text style={styles.actionIcon}>🔄</Text>
+          <TouchableOpacity
+            style={styles.actionCard}
+            accessibilityRole="button"
+            accessibilityLabel={t('home.actions.swap')}
+            accessibilityHint="Coming soon"
+          >
+            <Text style={styles.actionIcon} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">🔄</Text>
             <Text style={styles.actionLabel}>{t('home.actions.swap')}</Text>
           </TouchableOpacity>
         </View>

@@ -14,6 +14,7 @@ import ProfileScreen from '@/screens/Profile/ProfileScreen';
 import WalletManagementScreen from '@/screens/Profile/WalletManagementScreen';
 import MarketplaceScreen from '@/screens/Marketplace/MarketplaceScreen';
 import NFTDetailScreen from '@/screens/Marketplace/NFTDetailScreen';
+import FavoritesScreen from '@/screens/Favorites/FavoritesScreen';
 
 // Creator Screens
 import CreatorDashboardScreen from '@/screens/Creator/CreatorDashboardScreen';
@@ -26,10 +27,14 @@ import EarningsScreen from '@/screens/Creator/EarningsScreen';
 import NotificationsScreen from '@/screens/Notifications/NotificationsScreen';
 import NotificationSettingsScreen from '@/screens/Notifications/NotificationSettingsScreen';
 import SettingsScreen from '@/screens/Settings/SettingsScreen';
+import { SendScreen } from '@/screens/Wallet/SendScreen';
+
+// Backup Reminder Screen
+import BackupReminderScreen from '@/screens/BackupReminder/BackupReminderScreen';
 
 export type MainStackParamList = {
   Home: undefined;
-  WalletManagement: undefined;
+  WalletManagement: { autoExport?: boolean } | undefined;
   Profile: undefined;
   CreatorDashboard: undefined;
   MyNFTs: undefined;
@@ -42,7 +47,10 @@ export type MainStackParamList = {
   Notifications: undefined;
   NotificationSettings: undefined;
   Settings: undefined;
+  Send: { prefilledAddress?: string } | undefined;
   Marketplace: { category?: string } | undefined;
+BackupReminder: undefined;
+  Favorites: undefined;
 };
 
 const Stack = createNativeStackNavigator<MainStackParamList>();
@@ -121,6 +129,8 @@ export default function MainNavigator() {
             </ScreenErrorBoundary>
           )}
         </Stack.Screen>
+
+        <Stack.Screen name="Send" component={SendScreen} />
         
         {/* Marketplace with detail transition */}
         <Stack.Screen 
@@ -145,6 +155,18 @@ export default function MainNavigator() {
           {() => (
             <ScreenErrorBoundary name="NFTDetailScreen">
               <NFTDetailScreen />
+            </ScreenErrorBoundary>
+          )}
+        </Stack.Screen>
+
+        {/* Favorites / Wishlist with detail transition */}
+        <Stack.Screen 
+          name="Favorites"
+          options={getTransitionConfig('detail')}
+        >
+          {() => (
+            <ScreenErrorBoundary name="FavoritesScreen">
+              <FavoritesScreen />
             </ScreenErrorBoundary>
           )}
         </Stack.Screen>

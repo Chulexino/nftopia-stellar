@@ -101,6 +101,9 @@ export default function EmailLoginScreen({ navigation }: Props) {
         onPress={handleLogin}
         disabled={isLoading}
         testID="login-button"
+        accessibilityRole="button"
+        accessibilityLabel="Sign in"
+        accessibilityState={{ disabled: isLoading, busy: isLoading }}
       >
         {isLoading ? (
           <ActivityIndicator color="#fff" />
@@ -111,10 +114,15 @@ export default function EmailLoginScreen({ navigation }: Props) {
 
       <View style={styles.row}>
         <Text style={styles.footerText}>Don't have an account? </Text>
-        <TouchableOpacity onPress={() => {
-          track('register_navigation');
-          navigation.navigate('EmailRegister');
-        }}>
+        <TouchableOpacity
+          onPress={() => {
+            track('register_navigation');
+            navigation.navigate('EmailRegister');
+          }}
+          accessibilityRole="button"
+          accessibilityLabel="Sign up for a new account"
+          hitSlop={{ top: 12, bottom: 12, left: 8, right: 8 }}
+        >
           <Text style={styles.linkText}>Sign Up</Text>
         </TouchableOpacity>
       </View>
@@ -134,10 +142,13 @@ export default function EmailLoginScreen({ navigation }: Props) {
 
   return (
     <KeyboardAwareScreen footer={footer} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>Welcome Back</Text>
+      <Text style={styles.title} accessibilityRole="header">
+        Welcome Back
+      </Text>
       <Text style={styles.subtitle}>
         Sign in to continue to NFTopia
       </Text>
+
 
       <View style={styles.form}>
         <FormInput
@@ -183,6 +194,9 @@ export default function EmailLoginScreen({ navigation }: Props) {
             Alert.alert('Feature coming soon!', 'Password reset will be implemented in the next update.');
           }}
           disabled={isLoading}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+          accessibilityState={{ disabled: isLoading }}
         >
           <Text style={[styles.forgotPasswordText, isLoading && styles.disabledLink]}>
             Forgot Password?
@@ -219,7 +233,9 @@ const styles = StyleSheet.create({
     marginTop: -8,
   },
   forgotPasswordText: {
-    color: '#007AFF',
+    // #0070EB (was #007AFF): the brighter blue only reached 4.02:1 against
+    // white, failing WCAG AA (4.5:1) for this 14px link text.
+    color: '#0070EB',
     fontSize: 14,
     fontWeight: '600',
   },
@@ -253,12 +269,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   linkText: {
-    color: '#007AFF',
+    color: '#0070EB',
     fontSize: 14,
     fontWeight: '600',
   },
   backButton: {
     alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 44,
     paddingVertical: 12,
   },
   backButtonText: {

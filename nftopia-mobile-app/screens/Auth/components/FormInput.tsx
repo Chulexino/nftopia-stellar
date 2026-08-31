@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   TextInputProps,
+  AccessibilityInfo,
 } from 'react-native';
 
 export interface FormInputProps {
@@ -53,9 +54,17 @@ export default function FormInput({
 }: FormInputProps) {
   const [isFocused, setIsFocused] = useState(false);
 
+  useEffect(() => {
+    if (error) {
+      AccessibilityInfo.announceForAccessibility(error);
+    }
+  }, [error]);
+
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>{label}</Text>
+      <Text style={styles.label} nativeID={`${testID}-label`}>
+        {label}
+      </Text>
       <TextInput
         ref={inputRef}
         style={[
@@ -82,8 +91,22 @@ export default function FormInput({
         testID={testID}
         multiline={multiline}
         numberOfLines={numberOfLines}
+        accessible
+        accessibilityLabel={label}
+        accessibilityHint={error ?? undefined}
+        accessibilityState={{ disabled: !editable }}
       />
-      {error ? <Text style={styles.errorText}>{error}</Text> : null}
+      {error ? (
+        <Text
+          style={styles.errorText}
+          accessible
+          accessibilityRole="text"
+          accessibilityLiveRegion="polite"
+          testID={testID ? `${testID}-error` : undefined}
+        >
+          {error}
+        </Text>
+      ) : null}
     </View>
   );
 }
@@ -113,7 +136,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   inputError: {
-    borderColor: '#FF3B30',
+    borderColor: '#D63228',
     backgroundColor: '#FFF5F5',
   },
   inputDisabled: {
@@ -126,7 +149,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 12,
-    color: '#FF3B30',
+    color: '#D63228',
     marginTop: 4,
   },
 });
