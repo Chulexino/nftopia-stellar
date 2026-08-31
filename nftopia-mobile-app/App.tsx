@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView, StatusBar, StyleSheet, Text, View, ActivityIndicator } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ApolloProvider, ApolloClient, NormalizedCacheObject } from '@apollo/client';
 import AppNavigator from './navigation/AppNavigator';
 import AppLayout from './app/_layout';
@@ -29,23 +30,25 @@ export default function App() {
   }
 
   return (
-    <ApolloProvider client={client}>
-      <AppLayout>
-        <PrivacyOverlay />
-        <AppLockManager>
-          <VersionCheckManager />
-          <SafeAreaView style={styles.container}>
-            <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
-            <NetworkStatusManager />
-            <SessionManager />
-            <BackupReminderManager />
-            <ConnectivityBanner />
-            <AppNavigator />
-            <ToastProvider />
-          </SafeAreaView>
-        </AppLockManager>
-      </AppLayout>
-    </ApolloProvider>
+    <SafeAreaProvider>
+      <ApolloProvider client={client}>
+        <AppLayout>
+          <PrivacyOverlay />
+          <AppLockManager>
+            <VersionCheckManager />
+            <SafeAreaView style={styles.container}>
+              <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+              <NetworkStatusManager />
+              <SessionManager />
+              <BackupReminderManager />
+              <ConnectivityBanner />
+              <AppNavigator />
+              <ToastProvider />
+            </SafeAreaView>
+          </AppLockManager>
+        </AppLayout>
+      </ApolloProvider>
+    </SafeAreaProvider>
   );
 }
 
